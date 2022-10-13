@@ -2,6 +2,7 @@
 % THEY ARE FUNDAMENTALLY DIFFERENT
 clc
 close all
+set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.3 0.3 0.4 0.4]);
 
 stoptime = 20;
 
@@ -13,9 +14,9 @@ M = [0;0;0];
 % Wheel inertia, direction, initial angle, torque
 Ir = 0.005;
 k = [0;0;1];
-wr0 = 0;%2*pi;
+wr0 = 0;
 w0 = cat(1,w0,wr0);
-Mr = 0;%0.001;
+Mr = 0.1;
 
 % Make matrices to operate vectorially
 I = diag(I);
