@@ -1,11 +1,17 @@
 clc
 clear
-r = [5493.312;3991.889;2304.718];
-v = [-4.792;4.946;2.856];
+r = [1.440084852930837e+03;6.464286824897491e+03;-1.518256115919854e+03];
+v = [-4.460570434953907;2.344228748475583;5.773283517522664];
 mu_E = astroConstants(13);
 
 [a,e,i,bOmega,sOmega,theta] = car2kep(r,v,mu_E,'deg');
-[r_new,v_new] = kep2car(a,e,i,bOmega,sOmega,theta,mu_E,'deg')
+% a = 6801.3;
+% e = 0.0012;
+% i = 0.9038;
+% bOmega = 1.5331;
+% sOmega = 0.3099;
+% theta = 5.6849;
+%[r_new,v_new] = kep2car(a,e,i,bOmega,sOmega,theta,mu_E,'deg')
 
 % Function car2kep
 function [a,e,i,bOmega,sOmega,theta] = car2kep( r, v, mu, angleUnit )
