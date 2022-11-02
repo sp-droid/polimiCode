@@ -22,6 +22,7 @@ I_inv = pinv(I);
 
 % Initial DCM & quaternion
 A0=[1 0 0; 0 1 0; 0 0 1];
+q0=[0;0;0;1];
 
 simu = sim("task.slx");
 w = simu.w;
