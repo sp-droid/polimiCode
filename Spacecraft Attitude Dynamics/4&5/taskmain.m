@@ -77,7 +77,7 @@ for i=1:nsteps
 end
 
 %Calculate degree of non-orthonormality in AnonNorm
-AnonNormvalue = zeros(nsteps);
+AnonNormvalue = zeros(1,nsteps);
 temp = permute(AnonNorm,[2 1 3]);
 Identity = eye(3);
 for i=1:nsteps
