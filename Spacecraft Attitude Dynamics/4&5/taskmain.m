@@ -21,7 +21,7 @@ Mr = 0;
 I = diag(I);
 I_inv = pinv(I);
 
-%% Initial DCM & quaternion
+%% Initial DCM, quaternion & Euler Angles
 %Other method:
 %h2 = cross(H0,[0 1 0]');
 %h3=cross(H0,h2);
@@ -51,6 +51,11 @@ q0(1) = 0.25/q0(4)*(A0(2,3)-A0(3,2));
 q0(2) = 0.25/q0(4)*(A0(3,1)-A0(1,3));
 q0(3) = 0.25/q0(4)*(A0(1,2)-A0(2,1));
 
+%Compute Euler Angles for 312
+euler312_0 = [-atan2(A0(2,1),A0(2,2)); asin(A0(2,3)); -atan2(A0(1,3),A0(3,3))];
+%Compute Euler Angles for 313
+euler313_0 = [-atan2(A0(3,1),A0(3,2)); asin(A0(3,3)); atan2(A0(1,3),A0(2,3))];
+
 %% Simulation
 simu = sim("task.slx");
 w = simu.w;
@@ -61,6 +66,7 @@ A = simu.A;
 AnonNorm = simu.nonNormA;
 q = simu.q;
 qnonNorm = simu.nonNormq;
+Aeuler = simu.Aeuler;
 
 %% Post-processing
 % Calculate h and T
@@ -93,6 +99,19 @@ for i=1:nsteps
     wInertnonNormq(:,:,i) = rotQuaternion(w(:,:,i),qnonNorm(:,:,i));
 end
 
+%Calculate degree of non-normality in qnonNorm
+qnonNormvalue = zeros(1,nsteps);
+for i=1:nsteps
+    qnonNormvalue(i) = norm(qnonNorm(:,:,i));
+end
+
+% Calculate w in the original frame, from w (body frame) and Aeuler
+%https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+wInertE = zeros(3,1,nsteps);
+for i=1:nsteps
+    wInertE(:,:,i) = Aeuler(:,:,i)*w(:,:,i);
+end
+
 %% Plots
 figure()
 plot( time, w(1,:), 'blue', LineWidth=2)
@@ -115,7 +134,33 @@ hold on
 plot( time, wInert(3,:), 'green', LineWidth=2)
 hold on
 xlabel('Time [s]'); ylabel('w [rd/s]');
-title('Angular velocity in inertial frame');
+title('Angular velocity in inertial frame (DCM)');
+grid on;
+legend('wx', 'wy', 'wz')
+hold off
+
+figure()
+plot( time, wInertq(1,:), 'blue', LineWidth=2)
+hold on
+plot( time, wInertq(2,:), 'red', LineWidth=2)
+hold on
+plot( time, wInertq(3,:), 'green', LineWidth=2)
+hold on
+xlabel('Time [s]'); ylabel('w [rd/s]');
+title('Angular velocity in inertial frame (quaternion)');
+grid on;
+legend('wx', 'wy', 'wz')
+hold off
+
+figure()
+plot( time, wInertE(1,:), 'blue', LineWidth=2)
+hold on
+plot( time, wInertE(2,:), 'red', LineWidth=2)
+hold on
+plot( time, wInertE(3,:), 'green', LineWidth=2)
+hold on
+xlabel('Time [s]'); ylabel('w [rd/s]');
+title('Angular velocity in inertial frame (Euler angles)');
 grid on;
 legend('wx', 'wy', 'wz')
 hold off
@@ -151,6 +196,12 @@ title('q vs non normalized q effect on wInertial');
 grid on;
 legend('wzDiff','wyDiff','wxDiff')
 hold off
+
+figure()
+plot( time, qnonNormvalue, LineWidth=2)
+xlabel('Time [s]'); ylabel('Norm(q)');
+title('Non normalized q divergence from orthonormality');
+grid on;
 
 figure()
 plot(time, T)
