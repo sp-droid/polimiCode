@@ -2,12 +2,10 @@ clc
 close all
 set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.3 0.3 0.4 0.4]);
 
-stoptime = 20;
-
 %% Given data
 % Spacecraft (inertia, initial angle, torque)
 I = [0.01; 0.05; 0.09];
-w0 = [1e-6; 1e-6; 1];
+w0 = [0.001; 0.001; 0.02];
 M = [0;0;0];
 
 % Wheel (inertia, direction, initial angle, torque)
@@ -45,14 +43,26 @@ mu_E = 398600; %km^3/s^2
 R_E = 6371; %km
 
 n = sqrt(mu_E/(height+R_E)^3); %rd/s
+%n = 0.02;
 w_LN = [0;0;n]; %Rotation of L wrt N
 
 %A_LN defined in simulink
 
-w0(3) = n;
-
 %% Simulation
-simu = sim("task2.slx");
+% Params
+simfile = 'task2';
+sim_time = 20;
+max_dt = .01; %[s]
+abs_tol = 1e-7;
+rel_tol = 1e-7;
+
+if bdIsLoaded('vdp')==1 %Checks if model is open so we can edit these params
+    set_param(simfile, 'StopTime', num2str(sim_time),...
+    'MaxStep', num2str(max_dt), 'AbsTol', num2str(abs_tol), 'RelTol', num2str(rel_tol))
+end
+
+% Simulation
+simu = sim(simfile);
 w = simu.w;
 w_d = simu.w_d;
 time = simu.time;
@@ -100,7 +110,7 @@ hold on
 plot( time, w(3,:), 'green', LineWidth=2)
 hold on
 xlabel('Time [s]'); ylabel('w [rd/s]');
-title('Angular velocity in body frame');
+title('w in body frame');
 grid on;
 legend('wx', 'wy', 'wz')
 hold off
@@ -113,7 +123,7 @@ hold on
 plot( time, wInert(3,:), 'green', LineWidth=2)
 hold on
 xlabel('Time [s]'); ylabel('w [rd/s]');
-title('Angular velocity in inertial frame (DCM)');
+title('w in inertial frame (DCM)');
 grid on;
 legend('wx', 'wy', 'wz')
 hold off
@@ -126,7 +136,7 @@ hold on
 plot( time, wInertq(3,:), 'green', LineWidth=2)
 hold on
 xlabel('Time [s]'); ylabel('w [rd/s]');
-title('Angular velocity in inertial frame (quaternion)');
+title('w in inertial frame (quaternion)');
 grid on;
 legend('wx', 'wy', 'wz')
 hold off
@@ -139,7 +149,7 @@ hold on
 plot( time, wInertE(3,:), 'green', LineWidth=2)
 hold on
 xlabel('Time [s]'); ylabel('w [rd/s]');
-title('Angular velocity in inertial frame (Euler angles)');
+title('w in inertial frame (Euler angles)');
 grid on;
 legend('wx', 'wy', 'wz')
 hold off
@@ -202,7 +212,7 @@ hold on
 plot( time, w_BL(3,:), 'green', LineWidth=2)
 hold on
 xlabel('Time [s]'); ylabel('w [rd/s]');
-title('Angular velocity between body and moving reference frames');
+title('Body vs moving reference frame');
 grid on;
 legend('w_BLx', 'w_BLy', 'w_BLz')
 hold off
