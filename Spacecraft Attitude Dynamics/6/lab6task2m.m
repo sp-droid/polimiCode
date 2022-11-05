@@ -50,7 +50,7 @@ w_LN = [0;0;n]; %Rotation of L wrt N
 
 %% Simulation
 % Params
-simfile = 'task2';
+simfile = 'lab6task2';
 sim_time = 20;
 max_dt = .01; %[s]
 abs_tol = 1e-7;

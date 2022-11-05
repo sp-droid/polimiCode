@@ -52,7 +52,7 @@ w_LN = [0;0;n]; %Rotation of L wrt N
 w0(3) = n;
 
 %% Simulation
-simu = sim("task1.slx");
+simu = sim("lab6task1.slx");
 w = simu.w;
 w_d = simu.w_d;
 time = simu.time;

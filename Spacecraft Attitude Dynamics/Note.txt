@@ -1,0 +1,4 @@
+The labs in this course work in more of an incremental way, in such a way that let's me cram everything into the last lab. Therefore, improvements
+will be added and bugs will be fixed for the last lab in this folder the most. 
+
+This is not the case with the other subject, Orbital Mechanics.
