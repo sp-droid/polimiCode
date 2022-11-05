@@ -1,4 +1,5 @@
 clc
+clear
 close all
 set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.3 0.3 0.4 0.4]);
 
@@ -46,79 +47,67 @@ n = sqrt(mu_E/(height+R_E)^3); %rd/s
 %n = 0.02;
 w_LN = [0;0;n]; %Rotation of L wrt N
 
-%A_LN defined in simulink
+%simu.A_LN defined in simulink
 
 %% Simulation
 % Params
-simfile = 'task1';
-sim_time = 20;
-max_dt = .01; %[s]
+simfile = 'lab7task1';
+sim_time = 2*pi/n;
+%max_dt = .01; %[s] 'MaxStep', num2str(max_dt)
 abs_tol = 1e-7;
 rel_tol = 1e-7;
 
-if bdIsLoaded('vdp')==1 %Checks if model is open so we can edit these params
-    set_param(simfile, 'StopTime', num2str(sim_time),...
-    'MaxStep', num2str(max_dt), 'AbsTol', num2str(abs_tol), 'RelTol', num2str(rel_tol))
+if bdIsLoaded(simfile)==1 %Checks if model is open so we can edit these params
+    set_param(simfile, 'StopTime', 'sim_time',...
+    'AbsTol', num2str(abs_tol), 'RelTol', num2str(rel_tol))
 end
 
 % Simulation
 simu = sim(simfile);
-w = simu.w;
-w_d = simu.w_d;
 time = simu.time;
 nsteps = length(time);
-A = simu.A;
-q = simu.q;
-Aeuler = simu.Aeuler;
-gamma = simu.gamma;
-pointingError = simu.pointingError;
-attitudeError = simu.attitudeError(1,:);
-simu.A_BL
-w_BL = simu.w_BL;
 
 %% Post-processing
 % Calculate h and T
 Idiag = diag(I);
-T = 0.5*(Idiag(1)*w(1,:).^2+Idiag(2)*w(2,:).^2+Idiag(3)*w(3,:).^2);
-h = sqrt((Idiag(1)*w(1,:)).^2+(Idiag(2)*w(2,:)).^2+(Idiag(3)*w(3,:)).^2);
-
-% Calculate w in the original frame, from w (body frame) and A
-wInert = zeros(3,1,nsteps);
-for i=1:nsteps
-    wInert(:,:,i) = A(:,:,i)*w(:,:,i);
-end
-
-% Calculate w in the original frame, from w (body frame) and q
-%https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-wInertq = zeros(3,1,nsteps);
-for i=1:nsteps
-    wInertq(:,:,i) = rotQuaternion(w(:,:,i),q(:,:,i));
-end
-
-% Calculate w in the original frame, from w (body frame) and Aeuler
-%https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-wInertE = zeros(3,1,nsteps);
-for i=1:nsteps
-    wInertE(:,:,i) = Aeuler(:,:,i)*w(:,:,i);
-end
+T = 0.5*(Idiag(1)*simu.w(1,:).^2+Idiag(2)*simu.w(2,:).^2+Idiag(3)*simu.w(3,:).^2);
+h = sqrt((Idiag(1)*simu.w(1,:)).^2+(Idiag(2)*simu.w(2,:)).^2+(Idiag(3)*simu.w(3,:)).^2);
 
 %% Plots
 figure()
-plot( time, w(1,:), 'blue', LineWidth=2)
+for i=1:3
+    for j=1:3
+        plot(time,reshape(simu.A_BN(i,j,:),1,[]))
+        hold on
+    end
+end
+xlabel('t [s]');
+title('$A^{BN}$');
+grid on; axis tight;
+hold off
+
+figure()
+plot( time, simu.w(1,:), 'blue', LineWidth=2)
 hold on
-plot( time, w(2,:), 'red', LineWidth=2)
+plot( time, simu.w(2,:), 'red', LineWidth=2)
 hold on
-plot( time, w(3,:), 'green', LineWidth=2)
+plot( time, simu.w(3,:), 'green', LineWidth=2)
 hold on
 xlabel('t [s]'); ylabel('$\omega$ [rd/s]');
 title('$\omega^B$');
-grid on;
+grid on; axis tight;
 legend('\omega^B_x', '\omega^B_y', '\omega^B_z')
 hold off
 
 kinematicMethod = 'DCM';
 switch kinematicMethod
     case 'DCM'
+        % Calculate simu.w in the original frame, from simu.w (body frame) and simu.A_BN
+        wInert = zeros(3,1,nsteps);
+        for i=1:nsteps
+            wInert(:,:,i) = simu.A_BN(:,:,i)*simu.w(:,:,i);
+        end
+
         figure()
         plot( time, wInert(1,:), 'blue', LineWidth=2)
         hold on
@@ -128,10 +117,17 @@ switch kinematicMethod
         hold on
         xlabel('t [s]'); ylabel('$\omega$ [rd/s]');
         title('$\omega^{BN}$ (DCM)');
-        grid on;
+        grid on; axis tight;
         legend('\omega^{BN}_x', '\omega^{BN}_y', '\omega^{BN}_z')
         hold off
     case 'quaternion'
+        % Calculate simu.w in the original frame, from simu.w (body frame) and simu.q
+        %https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+        wInertq = zeros(3,1,nsteps);
+        for i=1:nsteps
+            wInertq(:,:,i) = rotQuaternion(simu.w(:,:,i),simu.q(:,:,i));
+        end
+
         figure()
         plot( time, wInertq(1,:), 'blue', LineWidth=2)
         hold on
@@ -141,10 +137,17 @@ switch kinematicMethod
         hold on
         xlabel('t [s]'); ylabel('$\omega$ [rd/s]');
         title('$\omega^{BN}$ (quaternion)');
-        grid on;
+        grid on; axis tight;
         legend('\omega^{BN}_x', '\omega^{BN}_y', '\omega^{BN}_z')
         hold off
     case 'eulerAngles'
+        % Calculate simu.w in the original frame, from simu.w (body frame) and simu.Aeuler
+        %https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+        wInertE = zeros(3,1,nsteps);
+        for i=1:nsteps
+            wInertE(:,:,i) = simu.Aeuler(:,:,i)*simu.w(:,:,i);
+        end
+
         figure()
         plot( time, wInertE(1,:), 'blue', LineWidth=2)
         hold on
@@ -154,7 +157,7 @@ switch kinematicMethod
         hold on
         xlabel('t [s]'); ylabel('$\omega$ [rd/s]');
         title('$\omega^{BN}$ (Euler angles)');
-        grid on;
+        grid on; axis tight;
         legend('\omega^{BN}_x', '\omega^{BN}_y', '\omega^{BN}_z')
         hold off
 end
@@ -162,11 +165,13 @@ end
 figure()
 plot(time, T)
 xlabel('t [s]');
+grid on; axis tight;
 title('Energy')
 
 figure()
 plot(time, h)
 xlabel('t [s]');
+grid on; axis tight;
 title('Angular momentum')
 
 plotEllipsoid = 0;
@@ -183,7 +188,7 @@ if plotEllipsoid==1
     momentEllipsoid = surf(X,Y,Z,'FaceAlpha', 0.5, 'EdgeColor', 'none');
     hold on
     
-    plot3(w(1,:),w(2,:),w(3,:),'k')
+    plot3(simu.w(1,:),simu.w(2,:),simu.w(3,:),'k')
     axis equal
     hold off
 end
@@ -192,49 +197,95 @@ plotPointing = 0;
 if plotPointing==1
     %Pointing direction
     figure()
-    plot( time, gamma(1,:), 'blue', LineWidth=2)
+    plot( time, simu.gamma(1,:), 'blue', LineWidth=2)
     hold on
-    plot( time, gamma(2,:), 'red', LineWidth=2)
+    plot( time, simu.gamma(2,:), 'red', LineWidth=2)
     hold on
-    plot( time, gamma(3,:), 'green', LineWidth=2)
+    plot( time, simu.gamma(3,:), 'green', LineWidth=2)
     hold on
     xlabel('t [s]'); ylabel('$\Gamma$ [-]');
     title('Pointing direction: $\Gamma^B$');
-    grid on;
+    grid on; axis tight;
     legend('\Gamma^B_x', '\Gamma^B_y', '\Gamma^B_z')
     hold off
     
     %Pointing error
     figure()
-    plot(time, rad2deg(pointingError))
+    plot(time, rad2deg(simu.pointingError(:)))
     xlabel('t [s]'); ylabel('$\theta$ [deg]');
+    grid on; axis tight;
     title('Pointing error $\theta = \arccos(\Gamma \cdot \Gamma_0)$')
 end
 
 %Attitude error
 figure()
-plot(time, attitudeError)
-xlabel('t [s]');
+plot(time, simu.attitudeError(:))
+xlabel('t [s]'); 
+grid on; axis tight;
 title('Attitude error: trace($A_{B/L} - \mathcal{I}$)')
 
 figure()
 for i=1:3
     for j=1:3
-        plot(time,)
+        plot(time,reshape(simu.A_BL(i,j,:),1,[]))
+        hold on
     end
 end
+xlabel('t [s]');
+title('$A^{BL}$');
+grid on; axis tight;
+hold off
 
 figure()
-plot(time, w_BL(1,:), 'blue', LineWidth=2)
+plot(time, simu.w_BL(1,:), 'blue', LineWidth=2)
 hold on
-plot(time, w_BL(2,:), 'red', LineWidth=2)
+plot(time, simu.w_BL(2,:), 'red', LineWidth=2)
 hold on
-plot(time, w_BL(3,:), 'green', LineWidth=2)
+plot(time, simu.w_BL(3,:), 'green', LineWidth=2)
 hold on
 xlabel('t [s]'); ylabel('$\omega$ [rd/s]');
 title('$\omega^{BL}$');
-grid on;
+grid on; axis tight;
 legend('\omega^{BL}_x', '\omega^{BL}_y', '\omega^{BL}_z')
+hold off
+
+figure()
+for i=1:3
+    for j=1:3
+        plot(time,reshape(simu.A_LN(i,j,:),1,[]))
+        hold on
+    end
+end
+xlabel('t [s]');
+title('$A^{LN}$');
+grid on; axis tight;
+hold off
+
+%Perturbations
+figure()
+plot(time, simu.Mtotal(1,:), 'blue', LineWidth=2)
+hold on
+plot(time, simu.Mtotal(2,:), 'red', LineWidth=2)
+hold on
+plot(time, simu.Mtotal(3,:), 'green', LineWidth=2)
+hold on
+xlabel('t [s]'); ylabel('M');
+title('External torque');
+grid on; axis tight;
+legend('M_x', 'M_y', 'M_z')
+hold off
+
+figure()
+plot(time, simu.Mgg(1,:), 'blue', LineWidth=2)
+hold on
+plot(time, simu.Mgg(2,:), 'red', LineWidth=2)
+hold on
+plot(time, simu.Mgg(3,:), 'green', LineWidth=2)
+hold on
+xlabel('t [s]'); ylabel('M');
+title('Gravity gradient perturbation');
+grid on; axis tight;
+legend('M^{GG}_x', 'M^{GG}_y', 'M^{GG}_z')
 hold off
 
 %% Functions
