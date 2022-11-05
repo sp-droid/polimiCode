@@ -6,8 +6,8 @@ stoptime = 20;
 
 %% Given data
 % Spacecraft (inertia, initial angle, torque)
-I = [0.07; 0.0504; 0.0109];
-w0 = [1; 0.1; 0.1];
+I = [0.01; 0.05; 0.09];
+w0 = [1e-6; 1e-6; 1];
 M = [0;0;0];
 
 % Wheel (inertia, direction, initial angle, torque)
@@ -21,28 +21,8 @@ Mr = 0;
 I = diag(I);
 I_inv = pinv(I);
 
-%% Initial DCM, quaternion & Euler Angles
-%Other method:
-%h2 = cross(H0,[0 1 0]');
-%h3=cross(H0,h2);
-%A_0(:,1)=H0
-%A_0(:,2)=h2
-%A_0(:,3)=h3
-
-%A0=[1 0 0; 0 1 0; 0 0 1];
-%q0=[0;0;0;1];
-
-%The initial attitude parameters must be (in this example) such that
-% h(0)inertial = [1;0;0]. For that, we are only permitted to change wx
-h0inert = [1;0;0];
-
-%Compute wx such that hbody has the same norm as hinertial
-w0(1) = sqrt(1-(I(2,2)*w0(2))^2+(I(3,3)*w0(3))^2)/I(1,1);
-
-%Compute A0
-h0 = I*w0(1:3);
-axisangle = vrrotvec(h0,h0inert);   %Axis-angle that rotates h0 to h0inert
-A0 = vrrotvec2mat(axisangle);       %DCM that fullfills that rotation
+%% Initial DCM, quaternion & Euler Angles of INERTIAL FRAME N
+A0=[1 0 0; 0 1 0; 0 0 1];
 
 %Compute q0
 q0 = zeros(4,1);
@@ -57,21 +37,33 @@ euler312_0 = [-atan2(A0(2,1),A0(2,2)); asin(A0(2,3)); -atan2(A0(1,3),A0(3,3))];
 euler313_0 = [-atan2(A0(3,1),A0(3,2)); asin(A0(3,3)); atan2(A0(1,3),A0(2,3))];
 
 %% Pointing error
-gamma0 = [1;0;0];
+gamma0 = [0;0;1];
+
+%% DCM of MOVING REFERENCE FRAME L
+height = 200; %km
+mu_E = 398600; %km^3/s^2
+R_E = 6371; %km
+
+n = sqrt(mu_E/(height+R_E)^3); %rd/s
+w_LN = [0;0;n]; %Rotation of L wrt N
+
+%A_LN defined in simulink
+
+w0(3) = n;
 
 %% Simulation
-simu = sim("task.slx");
+simu = sim("task2.slx");
 w = simu.w;
 w_d = simu.w_d;
 time = simu.time;
 nsteps = length(time);
 A = simu.A;
-AnonNorm = simu.nonNormA;
 q = simu.q;
-qnonNorm = simu.nonNormq;
 Aeuler = simu.Aeuler;
 gamma = simu.gamma;
 pointingError = simu.pointingError;
+w_BL = simu.w_BL;
+attitudeError = simu.attitudeError(1,:);
 
 %% Post-processing
 % Calculate h and T
@@ -81,33 +73,15 @@ h = sqrt((Idiag(1)*w(1,:)).^2+(Idiag(2)*w(2,:)).^2+(Idiag(3)*w(3,:)).^2);
 
 % Calculate w in the original frame, from w (body frame) and A
 wInert = zeros(3,1,nsteps);
-wInertnonNorm = zeros(3,1,nsteps);
 for i=1:nsteps
     wInert(:,:,i) = A(:,:,i)*w(:,:,i);
-    wInertnonNorm(:,:,i) = AnonNorm(:,:,i)*w(:,:,i);
-end
-
-%Calculate degree of non-orthonormality in AnonNorm
-AnonNormvalue = zeros(1,nsteps);
-temp = permute(AnonNorm,[2 1 3]);
-Identity = eye(3);
-for i=1:nsteps
-    AnonNormvalue(i) = norm(Identity-temp(:,:,i)*AnonNorm(:,:,i));
 end
 
 % Calculate w in the original frame, from w (body frame) and q
 %https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
 wInertq = zeros(3,1,nsteps);
-wInertnonNormq = zeros(3,1,nsteps);
 for i=1:nsteps
     wInertq(:,:,i) = rotQuaternion(w(:,:,i),q(:,:,i));
-    wInertnonNormq(:,:,i) = rotQuaternion(w(:,:,i),qnonNorm(:,:,i));
-end
-
-%Calculate degree of non-normality in qnonNorm
-qnonNormvalue = zeros(1,nsteps);
-for i=1:nsteps
-    qnonNormvalue(i) = norm(qnonNorm(:,:,i));
 end
 
 % Calculate w in the original frame, from w (body frame) and Aeuler
@@ -171,44 +145,6 @@ legend('wx', 'wy', 'wz')
 hold off
 
 figure()
-plot( time, abs(wInert(3,:)-wInertnonNorm(3,:)), 'blue', LineWidth=2)
-hold on
-plot( time, abs(wInert(2,:)-wInertnonNorm(2,:)), 'red', LineWidth=2)
-hold on
-plot( time, abs(wInert(1,:)-wInertnonNorm(1,:)), 'green', LineWidth=2)
-hold on
-xlabel('Time [s]'); ylabel('w [rd/s]');
-title('DCM vs non normalized DCM effect on wInertial');
-grid on;
-legend('wzDiff','wyDiff','wxDiff')
-hold off
-
-figure()
-plot( time, AnonNormvalue, LineWidth=2)
-xlabel('Time [s]'); ylabel('Norm(I-A.T*A)');
-title('Non normalized DCM divergence from orthonormality');
-grid on;
-
-figure()
-plot( time, abs(wInertq(3,:)-wInertnonNormq(3,:)), 'blue', LineWidth=2)
-hold on
-plot( time, abs(wInertq(2,:)-wInertnonNormq(2,:)), 'red', LineWidth=2)
-hold on
-plot( time, abs(wInertq(1,:)-wInertnonNormq(1,:)), 'green', LineWidth=2)
-hold on
-xlabel('Time [s]'); ylabel('w [rd/s]');
-title('q vs non normalized q effect on wInertial');
-grid on;
-legend('wzDiff','wyDiff','wxDiff')
-hold off
-
-figure()
-plot( time, qnonNormvalue, LineWidth=2)
-xlabel('Time [s]'); ylabel('Norm(q)');
-title('Non normalized q divergence from orthonormality');
-grid on;
-
-figure()
 plot(time, T)
 title('Energy')
 
@@ -252,6 +188,24 @@ hold off
 figure()
 plot(time, rad2deg(pointingError))
 title('Pointing error [deg]')
+
+%Attitude error
+figure()
+plot(time, attitudeError)
+title('Attitude error abs(trace($A_{B/L} - \mathcal{I}$))')
+
+figure()
+plot( time, w_BL(1,:), 'blue', LineWidth=2)
+hold on
+plot( time, w_BL(2,:), 'red', LineWidth=2)
+hold on
+plot( time, w_BL(3,:), 'green', LineWidth=2)
+hold on
+xlabel('Time [s]'); ylabel('w [rd/s]');
+title('Angular velocity between body and moving reference frames');
+grid on;
+legend('w_BLx', 'w_BLy', 'w_BLz')
+hold off
 
 %% Functions
 function rotated = rotQuaternion(v,q)
