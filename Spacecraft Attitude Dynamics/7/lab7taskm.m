@@ -42,8 +42,17 @@ Mr = 0;
 I = diag(I);
 I_inv = pinv(I);
 
-% Parasitic moment
-mpar = [0.01;0.05;0.01];
+% Solar radiation pressure
+
+% Magnetic perturbation
+m_par = [0.01;0.05;0.01];
+w_E = 2*pi/(23*3600+56*60+4.09);
+mag_tilt = deg2rad(11.5);
+R_equat = 6371;
+H0 = sqrt((-29615e-9)^2+(-1728e-9)^2+(5186e-9)^2);
+
+%% Pointing error
+gamma0 = [0;0;1];
 
 %% Initial DCM, quaternion & Euler Angles of INERTIAL FRAME N
 A0=[1 0 0; 0 1 0; 0 0 1];
@@ -59,12 +68,6 @@ q0(3) = 0.25/q0(4)*(A0(1,2)-A0(2,1));
 euler312_0 = [-atan2(A0(2,1),A0(2,2)); asin(A0(2,3)); -atan2(A0(1,3),A0(3,3))];
 %Compute Euler Angles for 313
 euler313_0 = [-atan2(A0(3,1),A0(3,2)); asin(A0(3,3)); atan2(A0(1,3),A0(2,3))];
-
-%% Pointing error
-gamma0 = [0;0;1];
-
-%% DCM of MOVING REFERENCE FRAME L
-%Defined in simulink inside the attitude error block
 
 %% Simulation
 % Params
@@ -286,8 +289,8 @@ plot(time, simu.r_B(2,:), 'red', LineWidth=2)
 hold on
 plot(time, simu.r_B(3,:), 'green', LineWidth=2)
 hold on
-xlabel('t [s]'); ylabel('$\hat{r}$ [-]');
-title('Earth direction: $r^B$');
+xlabel('t [s]'); ylabel('r [km]');
+title('Earth distance: $r^B$');
 grid on; axis tight;
 legend('r^B_x', 'r^B_y', 'r^B_z')
 hold off
@@ -300,8 +303,8 @@ plot(time, simu.S_B(2,:), 'red', LineWidth=2)
 hold on
 plot(time, simu.S_B(3,:), 'green', LineWidth=2)
 hold on
-xlabel('t [s]'); ylabel('$\hat{r}$ [-]');
-title('Sun direction: $S^B$');
+xlabel('t [s]'); ylabel('r [km]');
+title('Sun distance: $S^B$');
 grid on; axis tight;
 legend('S^B_x', 'S^B_y', 'S^B_z')
 hold off
@@ -341,6 +344,19 @@ xlabel('t [s]'); ylabel('M');
 title('Gravity gradient perturbation');
 grid on; axis tight;
 legend('M^{GG}_x', 'M^{GG}_y', 'M^{GG}_z')
+hold off
+
+figure()
+plot(time, simu.Mmag(1,:), 'blue', LineWidth=2)
+hold on
+plot(time, simu.Mmag(2,:), 'red', LineWidth=2)
+hold on
+plot(time, simu.Mmag(3,:), 'green', LineWidth=2)
+hold on
+xlabel('t [s]'); ylabel('M');
+title('Magnetic perturbation');
+grid on; axis tight;
+legend('M^{mag}_x', 'M^{mag}_y', 'M^{mag}_z')
 hold off
 
 %% Functions
