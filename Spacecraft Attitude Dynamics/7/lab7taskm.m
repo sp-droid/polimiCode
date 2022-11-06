@@ -4,9 +4,31 @@ close all
 set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.3 0.3 0.4 0.4]);
 
 %% Given data
+% Orbit
+mu_E = 398600.4418;
+orbit = 'LEO';
+switch orbit
+    case 'LEO'
+        a = 6373+400;
+        e = 0.3;
+        incli = deg2rad(20);
+    case 'GEO'
+        a = 6373+35785;
+        e = 0;
+        incli = 0;
+end
+theta0 = 0;
+n = sqrt(mu_E/a^3);
+sim_time = 2*pi/n;
+
+% Sun direction
+R_Sun = 149597870.691;
+n_Sun = sqrt(132712440017.987/R_Sun^3);
+eps_Sun = deg2rad(23.45);
+
 % Spacecraft (inertia, initial angle, torque)
-I = [0.01; 0.05; 0.09];
-w0 = [0.001; 0.001; 0.02];
+I = [1.009; 0.251; 0.916];
+w0 = [0; 0; n];
 M = [0;0;0];
 
 % Wheel (inertia, direction, initial angle, torque)
@@ -19,6 +41,9 @@ Mr = 0;
 % Make matrices operate vectorially
 I = diag(I);
 I_inv = pinv(I);
+
+% Parasitic moment
+mpar = [0.01;0.05;0.01];
 
 %% Initial DCM, quaternion & Euler Angles of INERTIAL FRAME N
 A0=[1 0 0; 0 1 0; 0 0 1];
@@ -39,20 +64,12 @@ euler313_0 = [-atan2(A0(3,1),A0(3,2)); asin(A0(3,3)); atan2(A0(1,3),A0(2,3))];
 gamma0 = [0;0;1];
 
 %% DCM of MOVING REFERENCE FRAME L
-height = 200; %km
-mu_E = 398600; %km^3/s^2
-R_E = 6371; %km
-
-n = sqrt(mu_E/(height+R_E)^3); %rd/s
-%n = 0.02;
-w_LN = [0;0;n]; %Rotation of L wrt N
-
-%simu.A_LN defined in simulink
+%Defined in simulink inside the attitude error block
 
 %% Simulation
 % Params
-simfile = 'lab7task1';
-sim_time = 2*pi/n;
+simfile = 'lab7task';
+%sim_time = 2*pi/n;
 %max_dt = .01; %[s] 'MaxStep', num2str(max_dt)
 abs_tol = 1e-7;
 rel_tol = 1e-7;
@@ -212,9 +229,9 @@ if plotPointing==1
     %Pointing error
     figure()
     plot(time, rad2deg(simu.pointingError(:)))
-    xlabel('t [s]'); ylabel('$\theta$ [deg]');
+    xlabel('t [s]'); ylabel('[deg]');
     grid on; axis tight;
-    title('Pointing error $\theta = \arccos(\Gamma \cdot \Gamma_0)$')
+    title('Pointing error: $angle(\Gamma,\Gamma_0)$')
 end
 
 %Attitude error
@@ -261,6 +278,44 @@ title('$A^{LN}$');
 grid on; axis tight;
 hold off
 
+%Earth direction
+figure()
+plot(time, simu.r_B(1,:), 'blue', LineWidth=2)
+hold on
+plot(time, simu.r_B(2,:), 'red', LineWidth=2)
+hold on
+plot(time, simu.r_B(3,:), 'green', LineWidth=2)
+hold on
+xlabel('t [s]'); ylabel('$\hat{r}$ [-]');
+title('Earth direction: $r^B$');
+grid on; axis tight;
+legend('r^B_x', 'r^B_y', 'r^B_z')
+hold off
+
+%Earth-Sun direction
+figure()
+plot(time, simu.S_B(1,:), 'blue', LineWidth=2)
+hold on
+plot(time, simu.S_B(2,:), 'red', LineWidth=2)
+hold on
+plot(time, simu.S_B(3,:), 'green', LineWidth=2)
+hold on
+xlabel('t [s]'); ylabel('$\hat{r}$ [-]');
+title('Sun direction: $S^B$');
+grid on; axis tight;
+legend('S^B_x', 'S^B_y', 'S^B_z')
+hold off
+
+sun_angle = zeros(1,nsteps);
+for i=1:nsteps
+    sun_angle(:,i) = angle3Dvecs(simu.r_B(:,:,i),simu.S_B(:,:,i));
+end
+figure()
+plot(time, rad2deg(sun_angle))
+xlabel('t [s]'); ylabel('[deg]');
+grid on; axis tight;
+title('Earth-Sun angle: $angle(r_B,S_B)$')
+
 %Perturbations
 figure()
 plot(time, simu.Mtotal(1,:), 'blue', LineWidth=2)
@@ -289,9 +344,16 @@ legend('M^{GG}_x', 'M^{GG}_y', 'M^{GG}_z')
 hold off
 
 %% Functions
+%Rotate a vector v to v' with the quaternion of the transformation q
 function rotated = rotQuaternion(v,q)
 %https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
 u = q(1:3);
 s = q(4);
 rotated = 2*(dot(v,u))*u +(s^2-dot(u,u))*v +2*s*cross(u,v);
+end
+
+%Angle between two 3D vectors, stable solution
+function angle = angle3Dvecs(u,v)
+%https://it.mathworks.com/matlabcentral/answers/16243-angle-between-two-vectors-in-3d
+angle = atan2(norm(cross(u,v)),dot(u,v));
 end
