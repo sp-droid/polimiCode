@@ -12,10 +12,12 @@ switch orbit
         a = 6373+400;
         e = 0.3;
         incli = deg2rad(20);
+        radiation = 1358; %(620 albedo@h +157 earth@h)
     case 'GEO'
         a = 6373+35785;
         e = 0;
         incli = 0;
+        radiation = 1358; %(11 albedo@h +3 earth@h)
 end
 theta0 = 0;
 n = sqrt(mu_E/a^3);
@@ -42,7 +44,25 @@ Mr = 0;
 I = diag(I);
 I_inv = pinv(I);
 
+% Body definition, cubesat (6 surf) with two panels (4 surf) on the side
+Normals = zeros(3,10);
+nsurfs = 10;
+n1=[1;0;0]; n2=[0;1;0]; n3=[0;0;1];
+Normals(:,1)=n1; Normals(:,4)=-n1; Normals(:,2)=n2; Normals(:,5)=-n2; Normals(:,3)=n3; Normals(:,6)=-n3;
+Normals(:,7)=n1; Normals(:,8)=-n1; Normals(:,9)=n1; Normals(:,10)=-n1;
+
+rho_s = [.5 .5 .5 .5 .5 .5 .1 .1 .1 .1]; %Specular coefficient
+rho_d = [.1 .1 .1 .1 .1 .1 .1 .1 .1 .1]; %Diffuse coefficient
+area = [.06 .06 .04 .06 .06 .04 .12 .12 .12 .12]; %Area of surface
+
+pos = zeros(3,10);
+pos_CG = [0;0;.018];
+pos(:,1)=.1*n1; pos(:,4)=-.1*n1; pos(:,2)=.1*n2; pos(:,5)=-.1*n2; pos(:,3)=.15*n1; pos(:,6)=-.15*n1;
+pos(:,7)=.4*n2; pos(:,8)=-.4*n2; pos(:,9)=.4*n2; pos(:,10)=-.4*n2;
+pos = pos-pos_CG;
+
 % Solar radiation pressure
+radpressure = radiation/(3e8);
 
 % Magnetic perturbation
 m_par = [0.01;0.05;0.01];
@@ -357,6 +377,19 @@ xlabel('t [s]'); ylabel('M');
 title('Magnetic perturbation');
 grid on; axis tight;
 legend('M^{mag}_x', 'M^{mag}_y', 'M^{mag}_z')
+hold off
+
+figure()
+plot(time, simu.Msrp(1,:), 'blue', LineWidth=2)
+hold on
+plot(time, simu.Msrp(2,:), 'red', LineWidth=2)
+hold on
+plot(time, simu.Msrp(3,:), 'green', LineWidth=2)
+hold on
+xlabel('t [s]'); ylabel('M');
+title('Solar radiation pressure perturbation');
+grid on; axis tight;
+legend('M^{srp}_x', 'M^{srp}_y', 'M^{srp}_z')
 hold off
 
 %% Functions
