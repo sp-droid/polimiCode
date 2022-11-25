@@ -6,7 +6,7 @@ set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.3 0.3
 %% Given data
 % Orbit
 mu_E = 398600.4418;
-orbit = 'LEO';
+orbit = 'test';
 switch orbit
     case 'LEO'
         a = 6373+400;
@@ -18,6 +18,12 @@ switch orbit
         a = 6373+35785;
         e = 0;
         incli = 0;
+        radiation = 1358; %(11 albedo@h +3 earth@h)
+        density = 0;
+    case 'test'
+        a = 6371+2000;
+        e = 0.1;
+        incli = deg2rad(10);
         radiation = 1358; %(11 albedo@h +3 earth@h)
         density = 0;
 end
@@ -53,15 +59,19 @@ n1=[1;0;0]; n2=[0;1;0]; n3=[0;0;1];
 Normals(:,1)=n1; Normals(:,4)=-n1; Normals(:,2)=n2; Normals(:,5)=-n2; Normals(:,3)=n3; Normals(:,6)=-n3;
 Normals(:,7)=n1; Normals(:,8)=-n1; Normals(:,9)=n1; Normals(:,10)=-n1;
 
-rho_s = [.5 .5 .5 .5 .5 .5 .1 .1 .1 .1]; %Specular coefficient
+rho_s = [.5 .5 .5 .5 .5 .5 .5 .5 .5 .5]; %Specular coefficient
 rho_d = [.1 .1 .1 .1 .1 .1 .1 .1 .1 .1]; %Diffuse coefficient
 area = [.06 .06 .04 .06 .06 .04 .12 .12 .12 .12]; %Area of surface
+%rho_s = [.5 .5 .5 .5 .5 .5 .1 .1 .1 .1]; %Specular coefficient
+%rho_d = [.1 .1 .1 .1 .1 .1 .1 .1 .1 .1]; %Diffuse coefficient
+%area = [.06 .06 .04 .06 .06 .04 .12 .12 .12 .12]; %Area of surface
 
 pos = zeros(3,10);
 pos_CG = 0.015*[1;1;1]; % Displacement of CG from geometric center
 pos(:,1)=.1*n1; pos(:,4)=-.1*n1; pos(:,2)=.1*n2; pos(:,5)=-.1*n2; pos(:,3)=.15*n3; pos(:,6)=-.15*n3;
-pos(:,7)=.4*n2; pos(:,8)=-.4*n2; pos(:,9)=.4*n2; pos(:,10)=-.4*n2;
+pos(:,7)=-.4*n2; pos(:,8)=-.4*n2; pos(:,9)=.4*n2; pos(:,10)=.4*n2;
 pos = pos-pos_CG;
+
 
 % Solar radiation pressure
 radpressure = radiation/(3e8);
