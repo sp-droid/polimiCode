@@ -2,14 +2,13 @@ clear
 close all
 
 %% Input data
+mu_E = astroConstants(13);
 rM = 0; % Prograde orbit. 1 if retrograde
 Nrev = 0; % Number of revolutions
 Ncase = 0; % Only when Nrev > 0. Small semi-major axis, or 1 for the large one
-r1 = [-21800; 37900; 0]; %[km]
-r2 = [27300; 27700; 0]; %[km]
-deltaT = 15*3600+6*60+40; %deltaT or time of flight (ToF) in [s]
-
-mu_E = astroConstants(13);
+[r1,~] = kep2car(12500,0,0,0,0,120,mu_E,'deg');
+[r2,~] = kep2car(9500,0.3,0,0,0,250,mu_E,'deg');
+deltaT = 3300; %deltaT or time of flight (ToF) in [s]
 
 %% Lambert problem
 [a,p,e,eflag,v1,v2,deltaTparabolic,deltaTheta] = lambertMR( r1, r2, deltaT, mu_E, rM, Nrev, Ncase );
