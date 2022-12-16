@@ -14,6 +14,8 @@ deltaT = 3300; %deltaT or time of flight (ToF) in [s]
 [a,p,e,eflag,vt1,vt2,deltaTparabolic,deltaTheta] = lambertMR( r1, r2, deltaT, mu_E, rM, Nrev, Ncase );
 vt1 = vt1'; vt2 = vt2'; %Velocity at points 1 and 2 of the transfer orbit
 
+cost = vecnorm(vt1-v1) + vecnorm(v2-vt2)
+
 %% Orbit propagation
 % Initial state vector
 y0 = [r1; vt1];
@@ -38,7 +40,11 @@ background('Black');
 hold on
 % Low precision orbits: Initial
 Yplot = onePeriod2BP(r1, v1, mu_E, 100);
-plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color','blue','LineWidth',3)
+plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0, 0.4470, 0.7410],'LineWidth',3)
+Yplot = onePeriod2BP(r2, v2, mu_E, 100);
+plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0.4660, 0.6740, 0.1880],'LineWidth',3)
+Yplot = onePeriod2BP(r1, vt1, mu_E, 100);
+plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'--','Color',[0.9290, 0.6940, 0.1250],'LineWidth',3)
 hold on
 % Planets
 planet3dOptions.FaceAlpha = 1;
@@ -64,45 +70,3 @@ ax = gca;
 ax.GridColor = [1,1,1];
 ax.GridAlpha = 0.25;
 hold off
-
-%% Functions
-% Function static orbit determination, for plotting (low accuracy)
-function Y = onePeriod2BP( r, v, mu, ngrid )
-%ode_2bp ODE system for the two-body problem (Keplerian motion)
-%
-% PROTOTYPE
-% dy = ode_2bp( t, y, mu )
-%
-% INPUT:
-% t[1] Time (can be omitted, as the system is autonomous) [T]
-% y[6x1] State of the body ( rx, ry, rz, vx, vy, vz ) [ L, L/T ]
-% mu[1] Gravitational parameter of the primary [L^3/T^2]
-%
-% OUTPUT:
-% dy[6x1] Derivative of the state [ L/T^2, L/T^3 ]
-%
-% CONTRIBUTORS:
-% Juan Luis Gonzalo Gomez
-%
-% VERSIONS
-% 2018-09-26: First version
-%
-% -------------------------------------------------------------------------
-% State vector
-y0 = [r; v];
-
-% Calculate semi-major axis and orbit period
-rNorm = vecnorm(r);
-vNorm = vecnorm(v);
-a = mu/(2*mu/rNorm-vNorm^2);
-Torb = 2*pi*sqrt( a^3/mu );
-
-% 1 period time grid
-T = linspace( 0, Torb, ngrid )';
-
-% Solver options
-options = odeset( 'RelTol', 1e-6, 'AbsTol', 1e-7 );
-
-% Integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu, 0, 0), T, y0, options );
-end
