@@ -1,2 +1,0 @@
-Planet3D
-ellipse3D 1.0.0.0 by William Martin

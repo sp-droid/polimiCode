@@ -32,14 +32,16 @@ options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
 [scaledT, Tname] = timescaling(T);
 
 %% Plots
-% Plot the orbit
+% Plot the flight path
 figure;
+% Black background and planets
 background('Black');
 hold on
 planet3dOptions.FaceAlpha = 1;
 planet3dOptions.Units = 'km';
 planet3D('Earth', planet3dOptions);
 hold on
+% Flight path
 scatter3( Y(:,1), Y(:,2), Y(:,3), 6, scaledT)
 h1 = plot3(Y(1,1), Y(1,2), Y(1,3),'^','Color',[0,1,0],'LineWidth',6);
 h2 = plot3(Y(end,1), Y(end,2), Y(end,3),'v','Color',[0,0.8,0],'LineWidth',6);

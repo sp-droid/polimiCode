@@ -6,17 +6,17 @@ mu_E = astroConstants(13);
 rM = 0; % Prograde orbit. 1 if retrograde
 Nrev = 0; % Number of revolutions
 Ncase = 0; % Only when Nrev > 0. Small semi-major axis, or 1 for the large one
-[r1,~] = kep2car(12500,0,0,0,0,120,mu_E,'deg');
-[r2,~] = kep2car(9500,0.3,0,0,0,250,mu_E,'deg');
+[r1,v1] = kep2car(12500,0,0,0,0,120,mu_E,'deg');
+[r2,v2] = kep2car(9500,0.3,0,0,0,250,mu_E,'deg');
 deltaT = 3300; %deltaT or time of flight (ToF) in [s]
 
 %% Lambert problem
-[a,p,e,eflag,v1,v2,deltaTparabolic,deltaTheta] = lambertMR( r1, r2, deltaT, mu_E, rM, Nrev, Ncase );
-v1 = v1'; v2 = v2';
+[a,p,e,eflag,vt1,vt2,deltaTparabolic,deltaTheta] = lambertMR( r1, r2, deltaT, mu_E, rM, Nrev, Ncase );
+vt1 = vt1'; vt2 = vt2'; %Velocity at points 1 and 2 of the transfer orbit
 
 %% Orbit propagation
 % Initial state vector
-y0 = [r1; v1];
+y0 = [r1; vt1];
 
 % Time grid
 T = linspace( 0, deltaT, 1000 )';
@@ -31,15 +31,22 @@ options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
 [scaledT, Tname] = timescaling(T);
 
 %% Plots
-% Plot the orbit
+% Plot the flight path
 figure;
+% Black background
 background('Black');
 hold on
+% Low precision orbits: Initial
+Yplot = onePeriod2BP(r1, v1, mu_E, 100);
+plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color','blue','LineWidth',3)
+hold on
+% Planets
 planet3dOptions.FaceAlpha = 1;
 planet3dOptions.Units = 'km';
 planet3D('Earth', planet3dOptions);
 hold on
-scatter3( Y(:,1), Y(:,2), Y(:,3), 6, scaledT)
+% Flight path
+scatter3(Y(:,1), Y(:,2), Y(:,3), 6, scaledT)
 h1 = plot3(Y(1,1), Y(1,2), Y(1,3),'^','Color',[0,1,0],'LineWidth',6);
 h2 = plot3(Y(end,1), Y(end,2), Y(end,3),'v','Color',[0,0.8,0],'LineWidth',6);
 hold on
@@ -57,3 +64,45 @@ ax = gca;
 ax.GridColor = [1,1,1];
 ax.GridAlpha = 0.25;
 hold off
+
+%% Functions
+% Function static orbit determination, for plotting (low accuracy)
+function Y = onePeriod2BP( r, v, mu, ngrid )
+%ode_2bp ODE system for the two-body problem (Keplerian motion)
+%
+% PROTOTYPE
+% dy = ode_2bp( t, y, mu )
+%
+% INPUT:
+% t[1] Time (can be omitted, as the system is autonomous) [T]
+% y[6x1] State of the body ( rx, ry, rz, vx, vy, vz ) [ L, L/T ]
+% mu[1] Gravitational parameter of the primary [L^3/T^2]
+%
+% OUTPUT:
+% dy[6x1] Derivative of the state [ L/T^2, L/T^3 ]
+%
+% CONTRIBUTORS:
+% Juan Luis Gonzalo Gomez
+%
+% VERSIONS
+% 2018-09-26: First version
+%
+% -------------------------------------------------------------------------
+% State vector
+y0 = [r; v];
+
+% Calculate semi-major axis and orbit period
+rNorm = vecnorm(r);
+vNorm = vecnorm(v);
+a = mu/(2*mu/rNorm-vNorm^2);
+Torb = 2*pi*sqrt( a^3/mu );
+
+% 1 period time grid
+T = linspace( 0, Torb, ngrid )';
+
+% Solver options
+options = odeset( 'RelTol', 1e-6, 'AbsTol', 1e-7 );
+
+% Integration
+[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu, 0, 0), T, y0, options );
+end
