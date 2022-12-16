@@ -59,7 +59,7 @@ n1=[1;0;0]; n2=[0;1;0]; n3=[0;0;1];
 Normals(:,1)=n1; Normals(:,4)=-n1; Normals(:,2)=n2; Normals(:,5)=-n2; Normals(:,3)=n3; Normals(:,6)=-n3;
 Normals(:,7)=n1; Normals(:,8)=-n1; Normals(:,9)=n1; Normals(:,10)=-n1;
 
-rho_s = [.5 .5 .5 .5 .5 .5 .5 .5 .5 .5]; %Specular coefficient
+rho_s = [.5 .5 .5 .5 .5 .5 .1 .1 .1 .1]; %Specular coefficient
 rho_d = [.1 .1 .1 .1 .1 .1 .1 .1 .1 .1]; %Diffuse coefficient
 area = [.06 .06 .04 .06 .06 .04 .12 .12 .12 .12]; %Area of surface
 %rho_s = [.5 .5 .5 .5 .5 .5 .1 .1 .1 .1]; %Specular coefficient
@@ -248,7 +248,7 @@ if plotEllipsoid==1
     hold off
 end
 
-plotPointing = 0;
+plotPointing = 1;
 if plotPointing==1
     %Pointing direction
     figure()
