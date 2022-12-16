@@ -2,32 +2,35 @@ clear
 close all
 
 %% Input data
-t1Window = [date2mjd2000([2003;4;1;0;0;0]); date2mjd2000([2003;8;1;0;0;0])];
-t2Window = [date2mjd2000([2003;9;1;0;0;0]); date2mjd2000([2004;3;1;0;0;0])];
+t1Window = [date2mjd2000([2023;11;1;0;0;0]); date2mjd2000([2025;1;1;0;0;0])];
+t2Window = [date2mjd2000([2024;4;1;0;0;0]); date2mjd2000([2025;3;1;0;0;0])];
 window1 = (t1Window(2)-t1Window(1))*24*3600;
 window2 = (t2Window(2)-t2Window(1))*24*3600;
 
 muSun = astroConstants(4);
 
 p1 = 3;
-p2 = 4;
+p2 = 1;
+porkchopUL = 50;
 
 %% Porkchop plot and optimization
 ngrid = 200;
 [T1,T2] = meshgrid(linspace(t1Window(1),t1Window(2),ngrid),...
                    linspace(t2Window(1),t2Window(2),ngrid));
-vCost = zeros('like',T1);
-deltaTgrid = zeros('like',T1);
+vCostgrid = ones(ngrid,ngrid)*porkchopUL;
+deltaTgrid = zeros(ngrid,ngrid);
 for i=1:ngrid
     for j=1:ngrid
         deltaTgrid(i,j) = T2(i,j)-T1(i,j);
 
-        vCost(i,j) = min(transferVcost(T1(i,j),T2(i,j),p1,p2,muSun),10);
+        [vCost,vc1,vc2,eflag] = transferVcost(T1(i,j),T2(i,j),p1,p2,muSun);
+        if (eflag == 0 && vc1<=7)
+            vCostgrid(i,j) = min(vCost, porkchopUL);
+        end
     end
 end
-
 % Best grid point
-[Mp,Ip] = min(vCost);
+[Mp,Ip] = min(vCostgrid);
 [M,I] = min(Mp);
 point = [T1(Ip(I),I); T2(Ip(I),I)];
 
@@ -66,15 +69,15 @@ figure;
 contour(T1,T2,deltaTgrid,'ShowText','on', 'LevelStep',60,'EdgeColor','black')
 hold on
 % Contour of curves with equal deltaV
-contour(T1,T2,vCost,'LineWidth',2)
+contour(T1,T2,vCostgrid,'LineWidth',2)
 % Lowest deltaV in the grid
-scatter(point(1),point(2),30,'filled')
+scatter(point(1),point(2),30,'filled','red')
 title(strcat('Lowest deltaV:', {' '}, num2str(minVcost), '[km/s]', {' '},...
     '(', num2str(scaledT), {' '}, Tname, ')'))
 
 xlabel('Departure date'); ylabel('Arrival date');
 cbar = colorbar;
-clim([min(vCost,[],'all'), 10]);
+clim([min(vCostgrid,[],'all'), porkchopUL]);
 cbar.Title.String = strcat('deltaV [km/s]');
 datetick('x',1,'keeplimits')
 datetick('y',1,'keeplimits')

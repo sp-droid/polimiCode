@@ -14,7 +14,7 @@ p2 = 1;
 porkchopUL = 50;
 
 %% Porkchop plot and optimization
-ngrid = 1200;
+ngrid = 200;
 [T1,T2] = meshgrid(linspace(t1Window(1),t1Window(2),ngrid),...
                    linspace(t2Window(1),t2Window(2),ngrid));
 vCostgrid = ones(ngrid,ngrid)*porkchopUL;
@@ -83,44 +83,3 @@ datetick('x',1,'keeplimits')
 datetick('y',1,'keeplimits')
 grid on;
 hold off
-
-rM = 0; % Prograde orbit. 1 if retrograde
-Nrev = 0; % Number of revolutions
-Ncase = 0; % Only when Nrev > 0. Small semi-major axis, or 1 for the large one
-
-%% Get ephemerides
-[kep, ~] = uplanet(t1Window(1), p1); %Earth
-[r1Window, v1Window] = kep2car(kep(1),kep(2),kep(3),kep(4),kep(5),kep(6), muSun, 'rad');
-[kep, ~] = uplanet(t1, p1); %Earth
-[r1, v1] = kep2car(kep(1),kep(2),kep(3),kep(4),kep(5),kep(6), muSun, 'rad');
-[kep, ~] = uplanet(t2, p1); %Earth
-[r1p, v1p] = kep2car(kep(1),kep(2),kep(3),kep(4),kep(5),kep(6), muSun, 'rad');
-[kep, ~] = uplanet(t2Window(1), p2); %Mars
-[r2Window, v2Window] = kep2car(kep(1),kep(2),kep(3),kep(4),kep(5),kep(6), muSun, 'rad');
-[kep, ~] = uplanet(t2, p2); %Mars
-[r2, v2] = kep2car(kep(1),kep(2),kep(3),kep(4),kep(5),kep(6), muSun, 'rad');
-[kep, ~] = uplanet(t1, p2); %Mars
-[r2p, v2p] = kep2car(kep(1),kep(2),kep(3),kep(4),kep(5),kep(6), muSun, 'rad');
-
-
-%% Lambert problem
-[a,p,e,eflag,vt1,vt2,deltaTparabolic,deltaTheta] = lambertMR( r1, r2, deltaT, muSun, rM, Nrev, Ncase );
-vt1 = vt1'; vt2 = vt2'; %Velocity at points 1 and 2 of the transfer orbit
-
-cost = vecnorm(vt1-v1) + vecnorm(v2-vt2);
-
-%% Orbit propagation
-% Initial state vector
-y0 = [r1; vt1];
-
-% Time grid
-T = linspace( 0, deltaT, 1000 )';
-
-% Set options for the ODE solver
-options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
-
-% Perform the integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,muSun, 0, 0), T, y0, options );
-
-% Scale time
-[scaledT, Tname] = timescaling(T);
