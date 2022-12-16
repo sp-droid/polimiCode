@@ -39,11 +39,11 @@ figure;
 background('Black');
 hold on
 % Low precision orbits: Initial
-Yplot = onePeriod2BP(r1, v1, mu_E, 100);
+Yplot = timed2BP(r1, v1, mu_E, 100);
 plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0, 0.4470, 0.7410],'LineWidth',3)
-Yplot = onePeriod2BP(r2, v2, mu_E, 100);
+Yplot = timed2BP(r2, v2, mu_E, 100);
 plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0.4660, 0.6740, 0.1880],'LineWidth',3)
-Yplot = onePeriod2BP(r1, vt1, mu_E, 100);
+Yplot = timed2BP(r1, vt1, mu_E, 100);
 plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'--','Color',[0.9290, 0.6940, 0.1250],'LineWidth',3)
 hold on
 % Planets

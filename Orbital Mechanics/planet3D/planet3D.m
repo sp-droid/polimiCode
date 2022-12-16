@@ -75,6 +75,11 @@ function planet_surface = planet3D(planet,opts)
     % Conversion factors and data.
     % ----------------------------
     
+	% Size factor
+    if (nargin < 2) || ~isfield(opts,'Size')
+        opts.Size = 1;
+    end
+	
     % conversion factors
     factors = {'AU'   1/149597870000;
                'ft'   100/30.48;
@@ -83,23 +88,23 @@ function planet_surface = planet3D(planet,opts)
                'mi'   100/160934.4;
                'nmi'  1/1852};
     
-            % planet/body          radius,       flattening,    obliquity,
-            %                      R [m]         f [-]          obl [deg]
-    data = {'Sun'                  696000e3      0.000009       0;
-            'Moon'                 1738.0e3      0.0012         6.68;
-            'Mercury'              2439.0e3      0.0000         0.0;
-            'Venus'                6052.0e3      0.000          177.3;
-            'Earth'                6378.1363e3   0.0033528131   23.45;
-            'Earth Coastlines'     6378.1363e3   0.0033528131   23.45;
-            'Earth Cloudy'         6378.1363e3   0.0033528131   23.45;
-            'Earth Night'          6378.1363e3   0.0033528131   23.45;
-            'Earth Night Cloudy'   6378.1363e3   0.0033528131   23.45;
-            'Mars'                 3397.2e3      0.00647630     25.19;
-            'Jupiter'              71492.0e3     0.0648744      3.12;
-            'Saturn'               60268.0e3     0.0979624      26.73;
-            'Uranus'               25559.0e3     0.0229273      97.86;
-            'Neptune'              24764.0e3     0.0171         29.56;
-            'Pluto'                1151.0e3      0.0            118.0};
+            % planet/body          radius,       		   flattening,    obliquity,
+            %                      R [m]         		   f [-]          obl [deg]
+    data = {'Sun'                  opts.Size*696000e3      0.000009       0;
+            'Moon'                 opts.Size*1738.0e3      0.0012         6.68;
+            'Mercury'              opts.Size*2439.0e3      0.0000         0.0;
+            'Venus'                opts.Size*6052.0e3      0.000          177.3;
+            'Earth'                opts.Size*6378.1363e3   0.0033528131   23.45;
+            'Earth Coastlines'     opts.Size*6378.1363e3   0.0033528131   23.45;
+            'Earth Cloudy'         opts.Size*6378.1363e3   0.0033528131   23.45;
+            'Earth Night'          opts.Size*6378.1363e3   0.0033528131   23.45;
+            'Earth Night Cloudy'   opts.Size*6378.1363e3   0.0033528131   23.45;
+            'Mars'                 opts.Size*3397.2e3      0.00647630     25.19;
+            'Jupiter'              opts.Size*71492.0e3     0.0648744      3.12;
+            'Saturn'               opts.Size*60268.0e3     0.0979624      26.73;
+            'Uranus'               opts.Size*25559.0e3     0.0229273      97.86;
+            'Neptune'              opts.Size*24764.0e3     0.0171         29.56;
+            'Pluto'                opts.Size*1151.0e3      0.0            118.0};
     
     % ------------------------------------
     % Sets (or defaults) plotting options.
