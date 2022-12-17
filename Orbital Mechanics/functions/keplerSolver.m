@@ -1,5 +1,4 @@
 function E = keplerSolver(t, e, a, mu, t0, E0)
-%timescaling for relevant time information in plots
 %
 % PROTOTYPE
 % E = keplerSolver(t, e, a, mu, t0, E0)
@@ -14,7 +13,6 @@ function E = keplerSolver(t, e, a, mu, t0, E0)
 %
 % OUTPUT:
 % E[1] Eccentric anomaly
-% tname String of the relevant time scale
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
