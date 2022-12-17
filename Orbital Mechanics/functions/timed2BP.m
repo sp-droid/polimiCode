@@ -1,4 +1,4 @@
-function Y = timed2BP( r, v, mu, ngrid, time )
+function Y = timed2BP( r, v, mu, ngrid, time, nPeriods )
 % Simple orbit determination, for fast plotting (low accuracy)
 %
 % PROTOTYPE
@@ -21,18 +21,21 @@ function Y = timed2BP( r, v, mu, ngrid, time )
 % 2018-09-26: First version
 %
 % -------------------------------------------------------------------------
-% If there is no specified time, it plots 1 orbital period
-if (nargin < 5) || isempty(time)
+if (nargin == 5)
+	T = linspace( 0, time, ngrid )';
+else
 	% Calculate semi-major axis and orbit period
 	rNorm = vecnorm(r);
 	vNorm = vecnorm(v);
 	a = mu/(2*mu/rNorm-vNorm^2);
 	Torb = 2*pi*sqrt( a^3/mu );
 
-	% 1 period time grid
-	T = linspace( 0, Torb, ngrid )';
-else
-	T = linspace( 0, time, ngrid )';
+	if (nargin == 4)
+		% 1 period time grid
+		T = linspace( 0, Torb, ngrid )';
+	else 
+		T = linspace( 0, nPeriods*Torb, ngrid )';
+	end
 end
 
 % State vector
