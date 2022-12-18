@@ -1,5 +1,6 @@
 clear
 close all
+set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.2 0.2 0.6 0.6]);
 
 %% Input data
 G = astroConstants(1);
@@ -9,7 +10,7 @@ muEarth = astroConstants(13);
 muSun = astroConstants(4);
 AU = astroConstants(2);
 vinc = [15.1;0;0]; % Incoming velocity at Earth's SOI's boundary
-impactVector = [0;0;9200]; % Points to the incoming asymptote from Earth
+impactVector = [0;0;-9200]; % Points to the incoming asymptote from Earth
 rEarth = [AU;0;0]; % Position of the Earth
 
 massSun = muSun/G;

@@ -21,8 +21,23 @@ function Y = timed2BP( r, v, mu, ngrid, time, nPeriods )
 % 2018-09-26: First version
 %
 % -------------------------------------------------------------------------
+% State vector
+y0 = [r; v];
+
+% Solver options
+options = odeset( 'RelTol', 1e-6, 'AbsTol', 1e-7 );
+
 if (nargin == 5)
-	T = linspace( 0, time, ngrid )';
+	if isscalar(time)
+		T = linspace( 0, time, ngrid )';
+	else
+		T = linspace( 0, time(1), ceil(ngrid/2) )';
+		[ ~, Y1 ] = ode113( @(t,y) ode_2bp(t,y,mu, 0, 0), T, y0, options );
+		T = linspace( 0, time(2), ceil(ngrid/2) )';
+		[ ~, Y2 ] = ode113( @(t,y) ode_2bp(t,y,mu, 0, 0), T, y0, options );
+		Y = [flip(Y1);Y2];
+		return
+	end
 else
 	% Calculate semi-major axis and orbit period
 	rNorm = vecnorm(r);
@@ -37,12 +52,6 @@ else
 		T = linspace( 0, nPeriods*Torb, ngrid )';
 	end
 end
-
-% State vector
-y0 = [r; v];
-
-% Solver options
-options = odeset( 'RelTol', 1e-6, 'AbsTol', 1e-7 );
 
 % Integration
 [ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu, 0, 0), T, y0, options );
