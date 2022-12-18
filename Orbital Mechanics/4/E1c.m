@@ -77,6 +77,7 @@ for i=1:ngrid
 end
 
 title('Fly-by on Sun frame')
+xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]');
 lgnd = legend([h1,hx(1),hx(2),hx(3),hx(4),hx(5)],'Before encounter',...
     hxlgnd(1),hxlgnd(2),hxlgnd(3),hxlgnd(4),hxlgnd(5));
 lgnd.FontSize = 12;

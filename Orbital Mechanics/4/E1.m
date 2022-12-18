@@ -85,12 +85,16 @@ hold off
 
 % Flight path
 figure;
+planet3dOptions.Units = 'km';
+planet3dOptions.Size = 20;
+planet3D('Sun', planet3dOptions);
+hold on
 Yplot = timed2BP(rEarth, vBefore, muSun, 100, [], -0.5); % Before encounter
 h1 = plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0, 0.4470, 0.7410],'LineWidth',3);
-hold on
 Yplot = timed2BP(rEarth, vAfter, muSun, 100, [], 0.5); % After encounter
 h2 = plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0.9290, 0.6940, 0.1250],'LineWidth',3);
 title('Fly-by on Sun frame')
+xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]');
 lgnd = legend([h1,h2],'Before encounter','After encounter','Location','northoutside','NumColumns',2);
 lgnd.FontSize = 12;
 grid on;
