@@ -29,10 +29,11 @@ vout = vAfter-vEarth;
 figure;
 % Flight paths
 time = 4000;
-Yplot = timed2BP(rper, vpers(:,1), muEarth, 100, -time); % Before encounter
+opts.show = true;
+Yplot = timed2BP([rper;vpers(:,1)], muEarth, opts, 100, -time); % Before encounter
 h1 = plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'LineWidth',3);
 hold on
-Yplot = timed2BP(rper, vpers(:,2), muEarth, 100, time); % After encounter
+Yplot = timed2BP([rper;vpers(:,2)], muEarth, [], 100, time); % After encounter
 h2 = plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'LineWidth',3);
 % Perigee
 h3 = scatter3(rper(1),rper(2),rper(3),60,'filled');
@@ -67,9 +68,9 @@ planet3dOptions.Units = 'km';
 planet3dOptions.Size = 20;
 planet3D('Sun', planet3dOptions);
 hold on
-Yplot = timed2BP(rEarth, vBefore, muSun, 100, [], -0.5); % Before encounter
+Yplot = timed2BP([rEarth;vBefore], muSun, [], 100, [], -0.5); % Before encounter
 h1 = plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0, 0.4470, 0.7410],'LineWidth',3);
-Yplot = timed2BP(rEarth, vAfter, muSun, 100, [], 0.5); % After encounter
+Yplot = timed2BP([rEarth;vAfter], muSun, [], 100, [], 0.5); % After encounter
 h2 = plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0.9290, 0.6940, 0.1250],'LineWidth',3);
 title('Fly-by on Sun frame')
 xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]');

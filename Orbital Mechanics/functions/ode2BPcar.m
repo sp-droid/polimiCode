@@ -1,8 +1,8 @@
-function dy = ode_2bp( ~, y, mu, J2, R )
-%ode_2bp ODE system for the two-body problem (Keplerian motion)
+function dy = ode2BPcar( ~, y, mu, J2, R )
+% ODE system for the two-body problem (Keplerian motion) in cartesian coordinates
 %
 % PROTOTYPE
-% dy = ode_2bp( t, y, mu )
+% @(t,y) ode2BPcar(t, y, mu, 0, 0)
 %
 % INPUT:
 % t[1] Time (can be omitted, as the system is autonomous) [T]
@@ -15,11 +15,7 @@ function dy = ode_2bp( ~, y, mu, J2, R )
 % dy[6x1] Derivative of the state [ L/T^2, L/T^3 ]
 %
 % CONTRIBUTORS:
-% Juan Luis Gonzalo Gomez
-%
-% VERSIONS
-% 2018-09-26: First version
-%
+% Pablo Arbelo Cabrera
 % -------------------------------------------------------------------------
 % Position and velocity
 r = y(1:3);
@@ -27,7 +23,10 @@ v = y(4:6);
 % Distance from the primary
 rnorm = norm(r);
 
-% aJ2 term
+% Primary gravity acceleration
+aGrav = (-mu/rnorm^3)*r;
+
+% Earth oblateness J2 perturbation
 aJ2 = 5*r(3)^2/rnorm^2;
 aJ2 = [r(1)/rnorm*(aJ2-1)
     r(2)/rnorm*(aJ2-1)
@@ -36,5 +35,5 @@ aJ2 = aJ2*1.5*J2*mu*R^2/rnorm^4;
 
 % Set the derivatives of the state
 dy = [ v
-(-mu/rnorm^3)*r+aJ2 ];
+aGrav+aJ2 ];
 end
