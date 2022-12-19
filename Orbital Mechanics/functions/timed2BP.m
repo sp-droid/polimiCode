@@ -36,7 +36,10 @@ function [Y,T] = timed2BP( y0, mu, opts, ngrid, time, nPeriods )
 % Y[ngridx1]	- Time grid [ T ]
 %
 % CONTRIBUTORS:
+% Alessandro Michelazzi
 % Pablo Arbelo Cabrera
+% Stefano Marinelli
+% Veronica Cerni
 %
 % -------------------------------------------------------------------------
 %% Options
