@@ -20,8 +20,8 @@ opts = struct;
 opts.TinPeriods = true;
 opts.RelTol = 1e-13;
 opts.AbsTol = 1e-14;
-%opts.J2 = J2Earth;
-%opts.R = radEarth;
+opts.J2 = J2Earth;
+opts.R = radEarth;
 
 [Ycar, T] = timed2BP(y0, muEarth, opts, ngrid, [], norbits);
 
@@ -52,6 +52,7 @@ title('Two-body problem orbit');
 legend('Cartesian','Gauss equations')
 axis equal;
 grid on;
+hold off
 
 triPlot(T, Ykep(:,1), Y2kep(:,1), 'a')
 

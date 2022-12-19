@@ -40,7 +40,6 @@ function [Y,T] = timed2BP( y0, mu, opts, ngrid, time, nPeriods )
 % Pablo Arbelo Cabrera
 % Stefano Marinelli
 % Veronica Cerni
-%
 % -------------------------------------------------------------------------
 %% Options
 if not(isstruct(opts))
@@ -78,8 +77,12 @@ if ~isfield(opts,'keplerian')
 	opts.keplerian = false;
 end
 if opts.keplerian
+	a = y0(1);
 	odeSystem = @(t,y) ode2BPkep(t, y, mu, J2, R, perturbs);
 else
+	rNorm = vecnorm(y0(1:3));
+	vNorm = vecnorm(y0(4:6));
+	a = mu/(2*mu/rNorm-vNorm^2);
 	odeSystem = @(t,y) ode2BPcar(t, y, mu, J2, R, perturbs);
 end
 
@@ -102,10 +105,7 @@ end
 solverOpts.AbsTol = opts.AbsTol;
 
 %% Define time integration parameters
-% Calculate semi-major axis and orbit period
-rNorm = vecnorm(y0(1:3));
-vNorm = vecnorm(y0(4:6));
-a = mu/(2*mu/rNorm-vNorm^2);
+% Calculate orbit period
 Torb = 2*pi*sqrt( a^3/mu );
 
 % Using time
@@ -152,6 +152,13 @@ else
 	Y = [flip(Y1);Y2];
 end
 
+%% Wrap angles in case we are working with keplerian elements
+if opts.keplerian
+	Y(:,3) = wrapTo2Pi(2*Y(:,3))/2;	% i		 [0, pi]
+	Y(:,4) = wrapTo2Pi(Y(:,4)); 	% bOmega [0, 2pi]
+	Y(:,5) = wrapTo2Pi(Y(:,5)); 	% sOmega [0, 2pi]
+	Y(:,6) = wrapTo2Pi(Y(:,6)); 	% theta  [0, 2pi]
+else
 %% Change time grid unit to orbital periods, if requested
 if opts.TinPeriods
 	T = T/Torb;
