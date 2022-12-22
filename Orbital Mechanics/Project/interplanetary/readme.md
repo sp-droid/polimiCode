@@ -1,10 +1,10 @@
 # Specific requirements
 
-**GROUP ID**: 2204
-**Departure**: Earth
-**Flyby planet**: Saturn
-**Arrival NEO**: 85
-**Earliest Departure**: 30-September-2026
+**GROUP ID**: 2204	
+**Departure**: Earth	
+**Flyby planet**: Saturn	
+**Arrival NEO**: 85	
+**Earliest Departure**: 30-September-2026	
 **Latest Arrival**: 28-March-2061
 
 # General requirements
