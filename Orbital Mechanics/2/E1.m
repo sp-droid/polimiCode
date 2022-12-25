@@ -25,15 +25,14 @@ Torb = 2*pi*sqrt( a^3/mu_E );          % Orbital period
 lambda = Torb*w_E;                     % Ground track drift
 nOrb = 3.25;
 nPoints = 5000;
-t = linspace(0,Torb*nOrb,nPoints);
 
 % NOTA: IMPLEMENTAR FUNCION QUE TRANSFORME STATE -> KEP VECTOR
 %% Computation
-% Set options for the ODE solver
-options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
-
 % Perform the integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu_E, 0, R_E), t, y0, options );
+opts.RelTol = 1e-13;
+opts.AbsTol = 1e-14;
+[ Y, t ] = timed2BP(y0,mu_E,opts,nPoints,Torb*nOrb);
+t = t';
 
 r = Y(:,1:3);
 v = Y(:,4:6);

@@ -36,14 +36,13 @@ Torb_RGT = 2*pi*sqrt( a_RGT^3/mu_E );
 
 nOrb = k;
 nPoints = 15000;
-t = linspace(0,Torb_RGT*nOrb,nPoints);
 
 %% Computation
-% Set options for the ODE solver
-options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
-
 % Perform the integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu_E, 0, R_E), t, y0, options );
+opts.RelTol = 1e-13;
+opts.AbsTol = 1e-14;
+[ Y, t ] = timed2BP(y0,mu_E,opts,nPoints,Torb_RGT*nOrb);
+t = t';
 
 r = Y(:,1:3);
 v = Y(:,4:6);
@@ -58,7 +57,7 @@ long = wrapTo180(rad2deg(alpha-greenwich-w_E*t));
 lat = rad2deg(delta);
 
 figure()
-img = imread('earth2D','png');
+img = imread('earth2D','jpg');
 image('CData',img,'XData',[-180 180],'YData',[90,-90]);
 hold on
 
@@ -73,7 +72,11 @@ v0_RGT = v0.*fact;
 y0_RGT = [ r0; v0_RGT ];
 
 % Perform the integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu_E, 0, R_E), t, y0_RGT, options );
+opts.RelTol = 1e-13;
+opts.AbsTol = 1e-14;
+[ Y, t ] = timed2BP(y0_RGT,mu_E,opts,nPoints,[],k);
+t = t';
+
 
 r_RGT = Y(:,1:3);
 v_RGT = Y(:,4:6);
@@ -103,44 +106,3 @@ xlabel('Longitude [deg]')
 ylabel('Latitude [deg]')
 grid on
 hold off
-
-%% Functions
-% Function ode_2bp
-function dy = ode_2bp( ~, y, mu, J2, R )
-%ode_2bp ODE system for the two-body problem (Keplerian motion)
-%
-% PROTOTYPE
-% dy = ode_2bp( t, y, mu )
-%
-% INPUT:
-% t[1] Time (can be omitted, as the system is autonomous) [T]
-% y[6x1] State of the body ( rx, ry, rz, vx, vy, vz ) [ L, L/T ]
-% mu[1] Gravitational parameter of the primary [L^3/T^2]
-%
-% OUTPUT:
-% dy[6x1] Derivative of the state [ L/T^2, L/T^3 ]
-%
-% CONTRIBUTORS:
-% Juan Luis Gonzalo Gomez
-%
-% VERSIONS
-% 2018-09-26: First version
-%
-% -------------------------------------------------------------------------
-% Position and velocity
-r = y(1:3);
-v = y(4:6);
-% Distance from the primary
-rnorm = norm(r);
-
-% aJ2 term
-aJ2 = 5*r(3)^2/rnorm^2;
-aJ2 = [r(1)/rnorm*(aJ2-1)
-    r(2)/rnorm*(aJ2-1)
-    r(3)/rnorm*(aJ2-3)];
-aJ2 = aJ2*1.5*J2*mu*R^2/rnorm^4;
-
-% Set the derivatives of the state
-dy = [ v
-(-mu/rnorm^3)*r+aJ2 ];
-end

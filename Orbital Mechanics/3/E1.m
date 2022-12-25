@@ -19,11 +19,9 @@ v1 = v1'; v2 = v2';
 % Initial state vector
 y0 = [r1; v1];
 
-% Set options for the ODE solver
+% Perform the integration
 opts.RelTol = 1e-13;
 opts.AbsTol = 1e-14;
-
-% Perform the integration
 [ Y, T ] = timed2BP(y0,mu_E,opts,1000,deltaT);
 
 % Scale time
