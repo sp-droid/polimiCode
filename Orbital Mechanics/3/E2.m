@@ -20,14 +20,10 @@ cost = vecnorm(vt1-v1) + vecnorm(v2-vt2)
 % Initial state vector
 y0 = [r1; vt1];
 
-% Time grid
-T = linspace( 0, deltaT, 1000 )';
-
-% Set options for the ODE solver
-options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
-
 % Perform the integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu_E, 0, 0), T, y0, options );
+opts.RelTol = 1e-13;
+opts.AbsTol = 1e-14;
+[ Y, T ] = timed2BP(y0,mu_E,opts,1000,deltaT);
 
 % Scale time
 [scaledT, Tname] = timescaling(T);
@@ -39,11 +35,11 @@ figure;
 background('Black');
 hold on
 % Low precision orbits: Initial
-Yplot = timed2BP(r1, v1, mu_E, 100);
+Yplot = timed2BP([r1;v1], mu_E, [], 100);
 plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0, 0.4470, 0.7410],'LineWidth',3)
-Yplot = timed2BP(r2, v2, mu_E, 100);
+Yplot = timed2BP([r2;v2], mu_E, [], 100);
 plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'Color',[0.4660, 0.6740, 0.1880],'LineWidth',3)
-Yplot = timed2BP(r1, vt1, mu_E, 100);
+Yplot = timed2BP([r1;vt1], mu_E, [], 100);
 plot3(Yplot(:,1), Yplot(:,2), Yplot(:,3),'--','Color',[0.9290, 0.6940, 0.1250],'LineWidth',3)
 hold on
 % Planets
