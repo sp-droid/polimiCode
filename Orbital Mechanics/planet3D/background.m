@@ -35,9 +35,9 @@ function background(spec)
         
         % determines which image background to use
         if strcmpi(spec,'Milky Way')
-            cdata_background = imread('milkyway.png');
+            cdata_background = imread('milkyway.jpg');
         elseif strcmpi(spec,'Stars')
-            cdata_background = imread('stars.png');
+            cdata_background = imread('stars.jpg');
         end
         
         % axis for background

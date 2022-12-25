@@ -49,7 +49,7 @@ lat = rad2deg(delta);
 
 %% Plots
 figure()
-img = imread('earth2D','png');
+img = imread('earth2D','jpg');
 image('CData',img,'XData',[-180 180],'YData',[90,-90]);
 hold on
 scatter(long, lat, 2, nOrb)

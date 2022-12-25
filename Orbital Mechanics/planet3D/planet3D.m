@@ -212,11 +212,11 @@ function planet_surface = planet3D(planet,opts)
         
         % loads image data
         if strcmpi(planet,'Earth Cloudy')
-            cdata = imread('earth.png')+imread('clouds.png');
+            cdata = imread('earth.jpg')+imread('clouds.jpg');
         elseif strcmpi(planet,'Earth Night Cloudy')
-            cdata = imread('earthnight.png')+0.1*imread('clouds.png');
+            cdata = imread('earthnight.jpg')+0.1*imread('clouds.jpg');
         else
-            cdata = imread(strcat('',lower(planet),'.png'));
+            cdata = imread(strcat('',lower(planet),'.jpg'));
         end
         
         % draws planet
@@ -293,7 +293,7 @@ function planet_surface = planet3D(planet,opts)
     if strcmpi(planet,'Saturn')
         
         % reads in image
-        cdata_rings = imread('saturnrings.png');
+        cdata_rings = imread('saturnrings.jpg');
         
         % determines number of different colors in ring (if you look at the
         % image, the way it is formatted just looks like horizontal bands

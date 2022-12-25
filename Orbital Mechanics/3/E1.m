@@ -19,14 +19,12 @@ v1 = v1'; v2 = v2';
 % Initial state vector
 y0 = [r1; v1];
 
-% Time grid
-T = linspace( 0, deltaT, 1000 )';
-
 % Set options for the ODE solver
-options = odeset( 'RelTol', 1e-13, 'AbsTol', 1e-14 );
+opts.RelTol = 1e-13;
+opts.AbsTol = 1e-14;
 
 % Perform the integration
-[ ~, Y ] = ode113( @(t,y) ode_2bp(t,y,mu_E, 0, 0), T, y0, options );
+[ Y, T ] = timed2BP(y0,mu_E,opts,1000,deltaT);
 
 % Scale time
 [scaledT, Tname] = timescaling(T);
