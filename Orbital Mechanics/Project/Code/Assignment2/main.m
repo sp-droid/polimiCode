@@ -12,18 +12,20 @@ AoverM = 0.0095; % m^2/kg
 
 %% Chosen inputs
 bOmega = 240; sOmega = 30; theta = 0;
-tWindow = [date2mjd2000([2023;11;1;0;0;0]);0];
+tWindow = [date2mjd2000([2022;1;1;0;0;0]);0];
 nsteps = 4000;
+nmax = 360;
+cR = 1; %Radiation pressure coefficient
 
 %% Inputs
 muEarth = astroConstants(13);
 Rearth = astroConstants(23);
-Tearth = 23*24+56*60+4.1; % Sidereal day
+Tearth = 23*3600+56*60+4.1; % Sidereal day
 muSun = astroConstants(4);
+Rsun = astroConstants(3);
+TTsun = 5778;
 muMoon = astroConstants(20);
 CS = load('egm96/egm96_to360.ascii', '-ascii');
-nmax = 360;
-c = 299792.458; % Speed of light in km/s
 
 [r0, v0] = kep2car(a, e, i, bOmega, sOmega, theta, muEarth, 'deg'); y0 = [r0; v0];
 wEarth = 2*pi/Tearth;
@@ -39,12 +41,17 @@ opts.AbsTol = 1e-14;
 %opts.muMoon = muMoon;
 %opts.wEarth = wEarth;
 %opts.egm96 = @(r, thetaG) egm96acc(r, thetaG, Rearth, muEarth, nmax, CS, A, B);
-%opts.lightSpeed = c;
+%opts.relativ = true;
+%densityModel = @(r) densitySimplified(norm(r)-Rearth);
+%opts.drag = @(r,v) drag(r, v, densityModel(r), wEarth, cD, AoverM);
+%sunPos = @(t) relativeSun(t, tWindow(1), muSun);
+%opts.srp = @(r,t) srp(r, sunPos, TTsun, Rsun, cR, AoverM)
+%i should clean this up a bit, make sure every perturbation is 1 function inside timed2bp
 opts.perturbShow = true;
 [ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],1.5);
 
-tt = vecnorm(Y(:,1:3)'); tt(end)
-tt = max(vecnorm(Y(:,4:6)')); tt(end)
+tt = vecnorm(Y(:,1:3)'); tt(end);
+tt = max(vecnorm(Y(:,4:6)')); tt(end);
 % Define time scale, time window and time in mjd
 [scaledT, Tname] = timescaling(T);
 
@@ -61,7 +68,7 @@ track = zeros(nsteps,3); % This is the track relative to the initial Earth.
 for j=1:nsteps
     rSun(j,:) = relativeSun(T(j), tWindow(1), muSun);
     angleEarth(j) = rad2deg(wrapTo2Pi(wEarth*T(j)));
-    track(j,1:3) = (rotRz(deg2rad(angleEarth(j)))*normalize(Y(j,1:3)','norm'))'*Rearth;
+    track(j,1:3) = (rotRz(deg2rad(-angleEarth(j)))*normalize(Y(j,1:3)','norm'))'*Rearth;
     rMoon(j,:) = relativeMoon(T(j), tWindow(1));
 end
 
@@ -69,7 +76,7 @@ end
 screen = get(0, 'ScreenSize');
 j = nsteps;
 r  = Y(j,1:3);
-trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
+trackT = (rotRz(deg2rad(angleEarth(j)))*track')';
 dist = tand(68)*(norm(r)-Rearth);
 %
 figure('Color','k','Position', [0 0 screen(3) screen(4)]);

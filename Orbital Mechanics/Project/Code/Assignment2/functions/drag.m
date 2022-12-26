@@ -1,9 +1,4 @@
-clear
-close all
-
-cD = 2.1;
-Aoverm = 0.0095; %m^2/kg
-
+function a = drag(r, v, rho, wEarth, cD, AoverM)
 % Assumptions:
 % Ignoring lift and binormal aerodynamic forces
 % Assuming no effect of attitude on cD
@@ -14,11 +9,11 @@ Aoverm = 0.0095; %m^2/kg
 % Assuming air co-rotates with the Earth, though some very strong winds
 % have been detected in the upper atmosphere (100s of m/s)
 % Basic rho model
-r = [ 7495.3;0.0000;0.0000 ];
-v = [ 0.0000;0.2686;-7.3239 ];
 %H0 = R(gas constant)*T/grav acceleration at that height/mean molecular
 %weight of constituents
-rho = rho0*exp(-(rnorm-Rearth)/H0);
-% v = v - cross(wEarth, r)
+% vrel, cD and density rho are contentious parts of this approximation
 
-a = -0.5*cD*Aoverm*rho*norm(v)*v
+vrel = (v - cross([0;0;wEarth],r))*1000;
+%AoverM[m^2/kg], cD[-], rho[kg/m^3], vrel^2[m/s]^2 --> m/s^2 -/1000-> km/s^2
+a = (-0.5*AoverM*cD*rho*norm(vrel)*vrel)/1000;
+end

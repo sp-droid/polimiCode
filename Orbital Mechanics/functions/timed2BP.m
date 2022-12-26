@@ -84,8 +84,12 @@ if isfield(opts,'egm96') && isfield(opts,'wEarth')
 else
 	perturbs.egm96 = false;
 end
-if isfield(opts,'lightSpeed')
-	perturbs.relativ = true;
+if isfield(opts,'relativ')
+	if opts.relativ
+		perturbs.relativ = true;
+	else
+		perturbs.relativ = false;
+	end
 else
 	perturbs.relativ = false;
 end

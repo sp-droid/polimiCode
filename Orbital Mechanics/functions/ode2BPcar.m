@@ -51,7 +51,7 @@ if perturbs.egm96
     aXYZ = aXYZ + opts.egm96(r, thetaG);
 end
 if perturbs.relativ
-    c = opts.lightSpeed;
+    c = 299792.458; % Speed of light in km/s
     aGrav = aGrav - mu/rnorm^3*(((2/c)^2*mu/rnorm-dot(v,v)/c^2)*r+(2/c)^2*dot(r,v)*v);
 end
 

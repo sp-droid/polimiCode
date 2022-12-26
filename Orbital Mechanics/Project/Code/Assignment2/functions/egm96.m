@@ -1,4 +1,4 @@
-function a = egm96acc(r, thetaEarth, Rearth, muEarth, nmax, CS, A, B)
+function a = egm96(r, thetaEarth, Rearth, muEarth, nmax, CS, A, B)
 % Earth undulation at distance r
 %
 % PROTOTYPE
