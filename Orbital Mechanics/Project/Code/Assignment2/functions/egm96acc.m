@@ -1,4 +1,4 @@
-function a = egm96acc(r, Rearth, muEarth, nmax, CS, A, B)
+function a = egm96acc(r, thetaEarth, Rearth, muEarth, nmax, CS, A, B)
 % Earth undulation at distance r
 %
 % PROTOTYPE
@@ -6,6 +6,7 @@ function a = egm96acc(r, Rearth, muEarth, nmax, CS, A, B)
 %
 % INPUTS:
 % r[3x1]		- Position vector [L]
+% thetaEarth[1] - Angle relative of x axis relative to the Greenwich meridian [rad]
 % Rearth[1]     - Earth's radius [L]
 % muEarth[1]    - Earth's gravitational parameter [L^3/T^2]
 % nmax[1]       - Number of terms used. Egm96 is complete at nmax = 360
@@ -19,8 +20,9 @@ function a = egm96acc(r, Rearth, muEarth, nmax, CS, A, B)
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
 % -------------------------------------------------------------------------
+% This assumes r comes from a fixed frame while the Earth is rotating, so we need thetaEarth
 rnorm = norm(r); x = r(1); y = r(2); z = r(3);
-long = atan2(y,x); ro = sqrt(x^2 + y^2);
+long = atan2(y,x)-thetaEarth; ro = sqrt(x^2 + y^2);
 xi = z/rnorm; u = sqrt(1-xi^2); Roverr = Rearth/rnorm;
 
 a = [0;0;0];

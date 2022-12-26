@@ -10,16 +10,25 @@ function [Y,T] = timed2BP( y0, mu, opts, ngrid, time, nPeriods )
 %		• y0[6kepx1]			- Keplerian ( a, e, i, bOmega, sOmega, theta) [ L, ADIM, ANGLE]. Necessary to set opts.keplerian to True
 % mu[1]			- Gravitational parameter of the primary [L^3/T^2]
 % opts[struc]	- Structure with several options:
+%		• show[bool]		-  Print options at the end
+%		• perturbShow[bool] -  Print perturbation trigger states
+%		• TinPeriods[bool]	-  Divide time grid by orbital period
 %		• AbsTol[1]			-  Solver absolute tolerance, defaults to 1e-7
-%		• J2[1]				-  Perturbation J2 term, defaults to 0
-%		• keplerian[bool]	-  True if using keplerian elements, defaults to false or cartesian
-%		• R[1]				-  Planet radius, needed for J2 perturbation, defaults to 0
 %		• RelTol[1]			-  Solver relative tolerance, defaults to 1e-6
-%		• show[bool]		-  Print options at the end, defaults to false
 %		• solver[@func]		-  Solver used, defaults to @ode113
-%		• TinPeriods[bool]	-  Divide time grid by orbital period, defaults to false
+%		• keplerian[bool]	-  If true, use keplerian elements (only J2 perturbation is implemented with kep. elems.)
+%		• Rearth[1]			-  Earth radius
+%		• muSun[1]		    -  Sun's gravitational parameter
+%		• muMoon[1]		    -  Moon's gravitational parameter
+%		• sunPos[@func]		-  rSun = @(t) func(t, args)
+%		• moonPos[@func]	-  rMoon = @(t) func(t, args)
+%		• J2[1]				-  Perturbation J2 term
 % ngrid[1]		- Number of points (low number is recommended)
 %
+% PERTURBATIONS TRIGGERS:
+% Simple J2     - Rearth, J2
+% Sun           - muSun, sunPos
+% Moon          - muMoon, moonPos
 % OPTIONAL INPUTS:
 % time			- Time interval in seconds:
 %		• omitted			- Defaults to linspace [0, 1 period]
@@ -45,27 +54,40 @@ end
 if ~isfield(opts,'show')
 	opts.show = false;
 end
+if ~isfield(opts,'perturbShow')
+	opts.perturbShow = false;
+end
 if ~isfield(opts,'TinPeriods')
 	opts.TinPeriods = false;
 end
 
 %% Perturbations
-% J2 perturbation
 perturbs = struct;
-if ~isfield(opts,'J2')
-	J2 = 0;
-else
-	J2 = opts.J2;
-end
-if ~isfield(opts,'R')
-	R = 0;
-else
-	R = opts.R;
-end
-if (J2 ~= 0) && (R ~= 0)
+
+if isfield(opts,'J2') && isfield(opts,'Rearth')
 	perturbs.J2 = true;
 else
 	perturbs.J2 = false;
+end
+if isfield(opts,'muSun') && isfield(opts,'sunPos')
+	perturbs.sun = true;
+else
+	perturbs.sun = false;
+end
+if isfield(opts,'muMoon') && isfield(opts,'moonPos')
+	perturbs.moon = true;
+else
+	perturbs.moon = false;
+end
+if isfield(opts,'egm96') && isfield(opts,'wEarth')
+	perturbs.egm96 = true;
+else
+	perturbs.egm96 = false;
+end
+if isfield(opts,'lightSpeed')
+	perturbs.relativ = true;
+else
+	perturbs.relativ = false;
 end
 
 %% Define spatial integration parameters
@@ -75,31 +97,11 @@ if ~isfield(opts,'keplerian')
 end
 if opts.keplerian
 	a = y0(1);
-	odeSystem = @(t,y) ode2BPkep(t, y, mu, J2, R, perturbs);
 else
 	rNorm = vecnorm(y0(1:3));
 	vNorm = vecnorm(y0(4:6));
 	a = mu/(2*mu/rNorm-vNorm^2);
-	odeSystem = @(t,y) ode2BPcar(t, y, mu, J2, R, perturbs);
 end
-
-% Solver used
-if ~isfield(opts,'solver')
-	opts.solver = @ode113;
-end
-
-% Solver relative tolerance
-solverOpts = odeset();
-if ~isfield(opts,'RelTol')
-	opts.RelTol = 1e-6;
-end
-solverOpts.RelTol = opts.RelTol;
-
-% Solver absolute tolerance
-if ~isfield(opts,'AbsTol')
-	opts.AbsTol = 1e-7;
-end
-solverOpts.AbsTol = opts.AbsTol;
 
 %% Define time integration parameters
 % Calculate orbit period
@@ -122,14 +124,44 @@ else
 		interval = [0;Torb];
 	else
 		% [0, nPeriods] or [nPeriods, 0]
-		if isscalar(nPeriods)
+        if isscalar(nPeriods)
 			interval = [0;nPeriods*Torb];
 		% [nPeriods(1), nPeriods(2)]
 		else
 			interval = Torb*nPeriods;
-		end
-		
+        end
 	end
+end
+
+% Define t0
+if (interval(2)>interval(1))
+    opts.t0 = interval(1);
+else
+    opts.t0 = interval(2);
+end
+
+%% Solver
+if ~isfield(opts,'solver')
+	opts.solver = @ode113;
+end
+
+% Solver relative tolerance
+solverOpts = odeset();
+if ~isfield(opts,'RelTol')
+	opts.RelTol = 1e-6;
+end
+solverOpts.RelTol = opts.RelTol;
+
+% Solver absolute tolerance
+if ~isfield(opts,'AbsTol')
+	opts.AbsTol = 1e-7;
+end
+solverOpts.AbsTol = opts.AbsTol;
+
+if opts.keplerian
+	odeSystem = @(t,y) ode2BPkep(t, y, mu, opts, perturbs);
+else
+	odeSystem = @(t,y) ode2BPcar(t, y, mu, opts, perturbs);
 end
 
 %% Integration
@@ -165,6 +197,9 @@ end
 if opts.show
 	opts = orderfields(opts);
 	display(opts)
+end
+%% Show perturbation trigger states
+if opts.perturbShow
 	display(perturbs)
 end
 end

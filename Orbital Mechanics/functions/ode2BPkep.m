@@ -1,4 +1,4 @@
-function dy = ode2BPkep( ~, y, mu, J2, R, perturbs )
+function dy = ode2BPkep( ~, y, mu, opts, perturbs )
 % ODE system for the two-body problem (Keplerian motion) in cartesian coordinates
 %
 % PROTOTYPE
@@ -34,7 +34,7 @@ if perturbs.J2
 	aJ2 = [ 1-3*sin(i)^2*sin(theta+sOmega)^2
 			sin(i)^2*sin(2*(theta+sOmega))
 			sin(2*i)*sin(theta+sOmega)];
-	aJ2 = aJ2 * -1.5*J2*mu*R^2/rnorm^4;
+	aJ2 = aJ2 * -1.5*J2*mu*Rearth^2/rnorm^4;
 	aRSW = aRSW + aJ2;
 end
 
