@@ -8,7 +8,7 @@ function R3 = rotRz( angle )
 % angle[1] Rotation value
 %
 % OUTPUT:
-% A[3x3] Rotation matrix of around X axis
+% A[3x3] Rotation matrix of around Z axis
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
