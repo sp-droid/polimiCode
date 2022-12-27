@@ -222,7 +222,7 @@ function planet_surface = planet3D(planet,opts)
         % draws planet
         planet_surface = surface(x,y,z,'FaceColor','texture',...
             'EdgeColor','none','CData',flipud(cdata),'DiffuseStrength',...
-            1,'SpecularStrength',0,'FaceAlpha',FaceAlpha);
+            1,'SpecularStrength',0.1,'FaceAlpha',FaceAlpha);
         
     end
     

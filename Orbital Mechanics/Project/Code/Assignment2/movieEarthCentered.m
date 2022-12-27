@@ -11,19 +11,21 @@ cD = 2.1;
 AoverM = 0.0095; % m^2/kg
 
 %% Chosen inputs
-bOmega = 240; sOmega = 30; theta = 0;
+bOmega = 60; sOmega = 30; theta = 0;
 tWindow = [date2mjd2000([2023;11;1;0;0;0]);0];
-nsteps = 100; 
+nsteps = 6000; 
 
 % Minimum value for this case: 600 steps per full period
-% Takes 5s real time seconds per image, so 5000 steps in a night (7h)
-% -> 7-8 periods
+% Takes 4.9s real time seconds per image, so 5400 steps in a night (7.5h)
+% -> 7-8 periods, but in order to make it smooth i'm using 3.5 periods
 
 %% Inputs
 muEarth = astroConstants(13);
 Rearth = astroConstants(23);
 Tearth = 23*3600+56*60+4.1; % Sidereal day
 muSun = astroConstants(4);
+Rsun = astroConstants(3);
+TTsun = 5778;
 muMoon = astroConstants(20);
 CS = load('egm96/egm96_to360.ascii', '-ascii');
 nmax = 360;
@@ -35,10 +37,10 @@ wEarth = 2*pi/Tearth;
 
 %% Orbit
 % Perform the integration
-opts.RelTol = 1e-6;
-opts.AbsTol = 1e-7;
+opts.RelTol = 1e-12;
+opts.AbsTol = 1e-13;
 opts.perturbShow = true;
-[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],[-0.08,0.08]);
+[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],[-0.25,2.25]);
 
 tt = vecnorm(Y(:,1:3)'); tt(end)
 tt = max(vecnorm(Y(:,4:6)')); tt(end)
@@ -70,7 +72,7 @@ for j=1:nsteps
     j
     r = Y(j,1:3);
     trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
-    dist = tand(68)*(norm(r)-Rearth);
+    dist = norm(r);%tand(68)*(norm(r)-Rearth);
     figure('Color','k','Position', [0 0 screen(3) screen(4)]);
 
     % Celestial bodies
@@ -79,21 +81,24 @@ for j=1:nsteps
     planet3D('Earth', p3Dopts);
     hold on
     p3Dopts = rmfield(p3Dopts, 'RotAngle');
-    p3Dopts.Position = rSun(j,:)/norm(rSun(j,:))*dist';
-    relDist = 2.1*(dist-norm(r)); % 2.1 because the sun appears bigger than it is
-    p3Dopts.Size = relDist/norm(rSun(j,:));
-    planet3D('Sun', p3Dopts);
-    %Sunlight, apparent Sun is ~28-34 arc minutes near Earth
-    light("Style","infinite","Position",p3Dopts.Position)
-    light("Style","local","Position",p3Dopts.Position*(1-2*tand(34/60)*relDist/dist));
-    p3Dopts.Position = rMoon(j,:)/norm(rMoon(j,:))*dist';
-    p3Dopts.Size = relDist/norm(rMoon(j,:)-r);
+    sunRelPos = normalize(rSun(j,:),'norm')*dist';
+    %Apparent Sun is ~28-34 arc minutes near Earth -> 2.1
+    sunRelSize = 2.1*Rsun/norm(rSun(j,:))*norm(sunRelPos-r);
+    [sunX,sunY,sunZ]=sphere;
+    sunX = sunX*sunRelSize+sunRelPos(1);
+    sunY = sunY*sunRelSize+sunRelPos(2);
+    sunZ = sunZ*sunRelSize+sunRelPos(3);
+    surf(sunX,sunY,sunZ,'EdgeColor','none','FaceColor',[0.98;0.843;0.627],'AmbientStrength',1,'SpecularStrength',1,'SpecularExponent',500)
+    %Sunlight
+    light("Style","infinite","Position",sunRelPos)
+    light("Style","local","Position",sunRelPos+normalize(r-sunRelPos,'norm')*2*sunRelSize);
+    p3Dopts.Position = normalize(rMoon(j,:),'norm')*dist';
+    p3Dopts.Size = norm(p3Dopts.Position-r)/norm(rMoon(j,:)-r);
     planet3D('Moon', p3Dopts);
     p3Dopts = rmfield(p3Dopts, 'Position');
     p3Dopts = rmfield(p3Dopts, 'Size');
     % Ground track
-    scatter3( trackT(1:j,1), trackT(1:j,2), trackT(1:j,3), 12, T(1:j), 'filled')
-    %xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]');
+    scatter3(trackT(1:j,1), trackT(1:j,2), trackT(1:j,3), 12, T(1:j), 'filled')
     title('Earth focused animation');  
     axis equal;
     grid on;
@@ -102,14 +107,16 @@ for j=1:nsteps
     ax.ZColor = 'k';
     
     ax.CameraPosition = r;  % Set the camera position
+    camva(2*rad2deg(atan((norm(r)-Rearth)/norm(r))));
     ax.XLim = [-dist, dist];  % Set the x-axis range
     ax.YLim = [-dist, dist];  % Set the y-axis range
     ax.ZLim = [-dist, dist];  % Set the z-axis range
 
+    hold off
     drawnow;
+
     frame = getframe (gcf);
-    writeVideo (v, frame);  
-    hold off;
+    writeVideo (v, frame);
     close
 end
 toc
