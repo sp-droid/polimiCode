@@ -13,7 +13,7 @@ AoverM = 0.0095; % m^2/kg
 %% Chosen inputs
 bOmega = 60; sOmega = 30; theta = 0;
 tWindow = [date2mjd2000([2023;11;1;0;0;0]);0];
-nsteps = 2400;
+nsteps = 100;
 nmax = 360;
 cR = 1; %Radiation pressure coefficient
 
@@ -49,7 +49,7 @@ opts.AbsTol = 1e-14;
 %opts.srp = @(r,t) srp(r, sunPos, TTsun, Rsun, cR, AoverM)
 %i should clean this up a bit, make sure every perturbation is 1 function inside timed2bp
 opts.perturbShow = true;
-[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],1);
+[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],0.08);
 
 tt = vecnorm(Y(:,1:3)'); tt(end);
 tt = max(vecnorm(Y(:,4:6)')); tt(end);
@@ -79,18 +79,20 @@ end
 screen = get(0, 'ScreenSize');
 j = nsteps;
 r  = Y(j,1:3);
+viewAngle = rad2deg(atan((norm(r)-Rearth)/norm(r)));
+robs = r/tand(viewAngle);
 trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
-dist = norm(r);%tand(68)*(norm(r)-Rearth);
+dist = norm(r);
 %
 figure('Color','k','Position', [0 0 screen(3) screen(4)]);
 % Celestial bodies
 p3Dopts.Units = 'km';
 p3Dopts.RotAngle = angleEarth(j);
-planet3D('Earth Cloudy', p3Dopts);
+planet3D('Earth', p3Dopts);
 hold on
 p3Dopts = rmfield(p3Dopts, 'RotAngle');
 sunRelPos = normalize(rSun(j,:),'norm')*dist';
-sunRelSize = 2.1*Rsun/norm(rSun(j,:))*norm(sunRelPos-r);
+sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs);
 [sunX,sunY,sunZ]=sphere;
 sunX = sunX*sunRelSize+sunRelPos(1);
 sunY = sunY*sunRelSize+sunRelPos(2);
@@ -100,7 +102,7 @@ surf(sunX,sunY,sunZ,'EdgeColor','none','FaceColor',[0.98;0.843;0.627],'AmbientSt
 light("Style","infinite","Position",sunRelPos)
 light("Style","local","Position",sunRelPos+normalize(r-sunRelPos,'norm')*2*sunRelSize);
 p3Dopts.Position = normalize(rMoon(j,:),'norm')*dist';
-p3Dopts.Size = norm(p3Dopts.Position-r)/norm(rMoon(j,:)-r);
+p3Dopts.Size = norm(p3Dopts.Position-robs)/norm(rMoon(j,:)-robs);
 planet3D('Moon', p3Dopts);
 % Flight path
 scatter3( trackT(:,1), trackT(:,2), trackT(:,3), 12, scaledT, 'filled')
@@ -117,12 +119,12 @@ ax = gca; ax.Color = 'k'; ax.GridColor = 'w';
 ax.GridAlpha = 0.45; ax.XColor = 'w'; ax.YColor = 'w';
 ax.ZColor = 'w';
 ax.CameraPosition = r;  % Set the camera positiont
-%rotate3d;
+camva(2*viewAngle);
 ax.XLim = [-dist, dist];  % Set the x-axis range
 ax.YLim = [-dist, dist];  % Set the y-axis range
 ax.ZLim = [-dist, dist];  % Set the z-axis range
 hold off
-%camva(2*rad2deg(atan((norm(r)-Rearth)/norm(r))));
+
 
 %% Functions
 function r = relativeSun(tseconds, initialMJD, muSun)

@@ -13,7 +13,7 @@ AoverM = 0.0095; % m^2/kg
 %% Chosen inputs
 bOmega = 60; sOmega = 30; theta = 0;
 tWindow = [date2mjd2000([2023;11;1;0;0;0]);0];
-nsteps = 6000; 
+nsteps = 5400; 
 
 % Minimum value for this case: 600 steps per full period
 % Takes 4.9s real time seconds per image, so 5400 steps in a night (7.5h)
@@ -40,7 +40,7 @@ wEarth = 2*pi/Tearth;
 opts.RelTol = 1e-12;
 opts.AbsTol = 1e-13;
 opts.perturbShow = true;
-[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],[-0.25,2.25]);
+[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],2.25);
 
 tt = vecnorm(Y(:,1:3)'); tt(end)
 tt = max(vecnorm(Y(:,4:6)')); tt(end)
@@ -71,8 +71,10 @@ tic
 for j=1:nsteps
     j
     r = Y(j,1:3);
+    viewAngle = rad2deg(atan((norm(r)-Rearth)/norm(r)));
+    robs = r/tand(viewAngle);
     trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
-    dist = norm(r);%tand(68)*(norm(r)-Rearth);
+    dist = norm(r);
     figure('Color','k','Position', [0 0 screen(3) screen(4)]);
 
     % Celestial bodies
@@ -83,7 +85,7 @@ for j=1:nsteps
     p3Dopts = rmfield(p3Dopts, 'RotAngle');
     sunRelPos = normalize(rSun(j,:),'norm')*dist';
     %Apparent Sun is ~28-34 arc minutes near Earth -> 2.1
-    sunRelSize = 2.1*Rsun/norm(rSun(j,:))*norm(sunRelPos-r);
+    sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs);
     [sunX,sunY,sunZ]=sphere;
     sunX = sunX*sunRelSize+sunRelPos(1);
     sunY = sunY*sunRelSize+sunRelPos(2);
@@ -93,7 +95,7 @@ for j=1:nsteps
     light("Style","infinite","Position",sunRelPos)
     light("Style","local","Position",sunRelPos+normalize(r-sunRelPos,'norm')*2*sunRelSize);
     p3Dopts.Position = normalize(rMoon(j,:),'norm')*dist';
-    p3Dopts.Size = norm(p3Dopts.Position-r)/norm(rMoon(j,:)-r);
+    p3Dopts.Size = norm(p3Dopts.Position-robs)/norm(rMoon(j,:)-robs);
     planet3D('Moon', p3Dopts);
     p3Dopts = rmfield(p3Dopts, 'Position');
     p3Dopts = rmfield(p3Dopts, 'Size');
@@ -107,7 +109,7 @@ for j=1:nsteps
     ax.ZColor = 'k';
     
     ax.CameraPosition = r;  % Set the camera position
-    camva(2*rad2deg(atan((norm(r)-Rearth)/norm(r))));
+    camva(2*viewAngle);
     ax.XLim = [-dist, dist];  % Set the x-axis range
     ax.YLim = [-dist, dist];  % Set the y-axis range
     ax.ZLim = [-dist, dist];  % Set the z-axis range
