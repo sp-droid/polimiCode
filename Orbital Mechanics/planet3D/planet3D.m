@@ -104,7 +104,7 @@ function planet_surface = planet3D(planet,opts)
             'Saturn'               opts.Size*60268.0e3     0.0979624      26.73;
             'Uranus'               opts.Size*25559.0e3     0.0229273      97.86;
             'Neptune'              opts.Size*24764.0e3     0.0171         29.56;
-            'Pluto'                opts.Size*1151.0e3      0.0            118.0};
+            'Milkyway'             opts.Size*1e3           0.0            0};
     
     % ------------------------------------
     % Sets (or defaults) plotting options.
@@ -219,10 +219,18 @@ function planet_surface = planet3D(planet,opts)
             cdata = imread(strcat('',lower(planet),'.jpg'));
         end
         
-        % draws planet
-        planet_surface = surface(x,y,z,'FaceColor','texture',...
-            'EdgeColor','none','CData',flipud(cdata),'DiffuseStrength',...
-            1,'SpecularStrength',0.1,'FaceAlpha',FaceAlpha);
+        if strcmpi(planet,'Milkyway')
+            % draws milky way
+            planet_surface = surface(x,y,z,'FaceColor','texture',...
+                'EdgeColor','none','CData',flipud(cdata),'DiffuseStrength',...
+                1,'SpecularStrength',0,'FaceAlpha',FaceAlpha);
+        else
+            % draws planet
+            planet_surface = surface(x,y,z,'FaceColor','texture',...
+                'EdgeColor','none','CData',flipud(cdata),'DiffuseStrength',...
+                1,'SpecularStrength',0.1,'FaceAlpha',FaceAlpha);
+        end
+        
         
     end
     

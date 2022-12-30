@@ -11,8 +11,8 @@ cD = 2.1;
 AoverM = 0.0095; % m^2/kg
 
 %% Chosen inputs
-bOmega = 60; sOmega = 30; theta = 0;
-tWindow = [date2mjd2000([2023;11;1;0;0;0]);0];
+bOmega = 60; sOmega = 210; theta = 0;
+tWindow = [date2mjd2000([2021;11;1;0;0;0]);0];
 nsteps = 5400; 
 
 % Minimum value for this case: 600 steps per full period
@@ -42,8 +42,6 @@ opts.AbsTol = 1e-13;
 opts.perturbShow = true;
 [ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],2.25);
 
-tt = vecnorm(Y(:,1:3)'); tt(end)
-tt = max(vecnorm(Y(:,4:6)')); tt(end)
 % Define time scale, time window and time in mjd
 [scaledT, Tname] = timescaling(T);
 
@@ -63,7 +61,6 @@ for j=1:nsteps
 end
 
 %% Animation
-%anim(nsteps) = struct('cdata',[],'colormap',[]);
 screen = get(0, 'ScreenSize');
 v = VideoWriter ('videos/movieEarthCentered.avi');
 open(v);
@@ -83,20 +80,26 @@ for j=1:nsteps
     planet3D('Earth', p3Dopts);
     hold on
     p3Dopts = rmfield(p3Dopts, 'RotAngle');
-    sunRelPos = normalize(rSun(j,:),'norm')*dist';
-    %Apparent Sun is ~28-34 arc minutes near Earth -> 2.1
-    sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs);
-    [sunX,sunY,sunZ]=sphere;
-    sunX = sunX*sunRelSize+sunRelPos(1);
-    sunY = sunY*sunRelSize+sunRelPos(2);
-    sunZ = sunZ*sunRelSize+sunRelPos(3);
-    surf(sunX,sunY,sunZ,'EdgeColor','none','FaceColor',[0.98;0.843;0.627],'AmbientStrength',1,'SpecularStrength',1,'SpecularExponent',500)
-    %Sunlight
+    p3Dopts.Position = r;
+    p3Dopts.Size = 3*dist;
+    planet3D('Milkyway', p3Dopts);
+    sunRelPos = (normalize(rSun(j,:),'norm')*dist);
+    sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs)*(1-Rearth/norm(r));
+    if (dot(robs,sunRelPos)<0)
+        [sunX,sunY,sunZ]=sphere;
+        sunX = sunX*sunRelSize+sunRelPos(1);
+        sunY = sunY*sunRelSize+sunRelPos(2);
+        sunZ = sunZ*sunRelSize+sunRelPos(3);
+        surf(sunX,sunY,sunZ,'EdgeColor','none','FaceColor',[0.98;0.843;0.627],'AmbientStrength',1,'SpecularStrength',1,'SpecularExponent',500)
+    end
+    %Sunlight, apparent Sun is ~28-34 arc minutes near Earth
     light("Style","infinite","Position",sunRelPos)
     light("Style","local","Position",sunRelPos+normalize(r-sunRelPos,'norm')*2*sunRelSize);
-    p3Dopts.Position = normalize(rMoon(j,:),'norm')*dist';
-    p3Dopts.Size = norm(p3Dopts.Position-robs)/norm(rMoon(j,:)-robs);
-    planet3D('Moon', p3Dopts);
+    p3Dopts.Position = (normalize(rMoon(j,:),'norm')*dist)';
+    p3Dopts.Size = norm(p3Dopts.Position-robs)/norm(rMoon(j,:)-robs)*(1-Rearth/norm(r));
+    if (dot(robs,p3Dopts.Position)<0)
+        planet3D('Moon', p3Dopts);
+    end
     p3Dopts = rmfield(p3Dopts, 'Position');
     p3Dopts = rmfield(p3Dopts, 'Size');
     % Ground track

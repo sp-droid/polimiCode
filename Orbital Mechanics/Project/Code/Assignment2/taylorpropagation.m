@@ -1,7 +1,7 @@
 clear
 close all
 
-ngrid = 86400;
+ngrid = 10000;
 muEarth = astroConstants(13);
 r0 = [ 7495.3;0.0000;0.0000 ];
 v0 = [ 0.0000;0.2686;-7.3239 ];
@@ -10,7 +10,7 @@ y0 = [ r0; v0 ];
 tic
 opts.RelTol = 1e-13;
 opts.AbsTol = 1e-24;
-[yode113, t] = timed2BP(y0, muEarth, opts, ngrid, 86400);
+[yode113, t] = timed2BP(y0, muEarth, opts, ngrid, 10000);
 yode113 = yode113';
 toc
 

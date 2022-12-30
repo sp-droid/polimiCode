@@ -12,7 +12,8 @@ AoverM = 0.0095; % m^2/kg
 
 %% Chosen inputs
 bOmega = 60; sOmega = 30; theta = 0;
-tWindow = [date2mjd2000([2023;11;1;0;0;0]);0];
+sOmega = 210;
+tWindow = [date2mjd2000([2021;11;1;0;0;0]);0];
 nsteps = 100;
 nmax = 360;
 cR = 1; %Radiation pressure coefficient
@@ -49,7 +50,7 @@ opts.AbsTol = 1e-14;
 %opts.srp = @(r,t) srp(r, sunPos, TTsun, Rsun, cR, AoverM)
 %i should clean this up a bit, make sure every perturbation is 1 function inside timed2bp
 opts.perturbShow = true;
-[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],0.08);
+[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],0.5);
 
 tt = vecnorm(Y(:,1:3)'); tt(end);
 tt = max(vecnorm(Y(:,4:6)')); tt(end);
@@ -77,13 +78,11 @@ end
 
 %% Static plot
 screen = get(0, 'ScreenSize');
-j = nsteps;
-r  = Y(j,1:3);
-viewAngle = rad2deg(atan((norm(r)-Rearth)/norm(r)));
-robs = r/tand(viewAngle);
+[dist,j] = max(vecnorm(Y(:,1:3)'));
+r  = normalize([-0.5640;7.9794;0.8682]','norm')*dist; %Get it with ax.CameraPosition
+robs = r;
 trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
-dist = norm(r);
-%
+
 figure('Color','k','Position', [0 0 screen(3) screen(4)]);
 % Celestial bodies
 p3Dopts.Units = 'km';
@@ -91,35 +90,42 @@ p3Dopts.RotAngle = angleEarth(j);
 planet3D('Earth', p3Dopts);
 hold on
 p3Dopts = rmfield(p3Dopts, 'RotAngle');
-sunRelPos = normalize(rSun(j,:),'norm')*dist';
-sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs);
-[sunX,sunY,sunZ]=sphere;
-sunX = sunX*sunRelSize+sunRelPos(1);
-sunY = sunY*sunRelSize+sunRelPos(2);
-sunZ = sunZ*sunRelSize+sunRelPos(3);
-surf(sunX,sunY,sunZ,'EdgeColor','none','FaceColor',[0.98;0.843;0.627],'AmbientStrength',1,'SpecularStrength',1,'SpecularExponent',500)
+p3Dopts.Position = r;
+p3Dopts.Size = 3*dist;
+planet3D('Milkyway', p3Dopts);
+sunRelPos = (normalize(rSun(j,:),'norm')*dist);
+sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs)*(1-Rearth/norm(r));
+if (dot(robs,sunRelPos)<0)
+    [sunX,sunY,sunZ]=sphere;
+    sunX = sunX*sunRelSize+sunRelPos(1);
+    sunY = sunY*sunRelSize+sunRelPos(2);
+    sunZ = sunZ*sunRelSize+sunRelPos(3);
+    surf(sunX,sunY,sunZ,'EdgeColor','none','FaceColor',[0.98;0.843;0.627],'AmbientStrength',1,'SpecularStrength',1,'SpecularExponent',500)
+end
 %Sunlight, apparent Sun is ~28-34 arc minutes near Earth
 light("Style","infinite","Position",sunRelPos)
 light("Style","local","Position",sunRelPos+normalize(r-sunRelPos,'norm')*2*sunRelSize);
-p3Dopts.Position = normalize(rMoon(j,:),'norm')*dist';
-p3Dopts.Size = norm(p3Dopts.Position-robs)/norm(rMoon(j,:)-robs);
-planet3D('Moon', p3Dopts);
+p3Dopts.Position = (normalize(rMoon(j,:),'norm')*dist)';
+p3Dopts.Size = norm(p3Dopts.Position-robs)/norm(rMoon(j,:)-robs)*(1-Rearth/norm(r));
+if (dot(robs,p3Dopts.Position)<0)
+    planet3D('Moon', p3Dopts);
+end
 % Flight path
 scatter3( trackT(:,1), trackT(:,2), trackT(:,3), 12, scaledT, 'filled')
 % Sun hitting the s/c
-%scatter3( Y(:,1), Y(:,2), Y(:,3), 12, sunP, 'filled')
+scatter3( Y(:,1), Y(:,2), Y(:,3), 12, scaledT, 'filled')
 xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]');
-title('Earth equatorial frame', 'FontSize', 14);
-cbar = colorbar; cbar.Color = 'w'; cbar.Title.Color = 'w';
-cbar.Title.String = strcat('Time [',Tname,']');
-clim([min(sunP);max(sunP)])   
+title(datestr(datetime(mjd20002date(tWindow(1)+T(end)/86400))), 'FontSize', 20,'Color','w');
+%cbar = colorbar; cbar.Color = 'w'; cbar.Title.Color = 'w';
+%cbar.Title.String = strcat('Time [',Tname,']');
+clim([min(scaledT);max(scaledT)])   
 axis equal;
 grid on;
 ax = gca; ax.Color = 'k'; ax.GridColor = 'w';
 ax.GridAlpha = 0.45; ax.XColor = 'w'; ax.YColor = 'w';
 ax.ZColor = 'w';
 ax.CameraPosition = r;  % Set the camera positiont
-camva(2*viewAngle);
+%camva(2*viewAngle);
 ax.XLim = [-dist, dist];  % Set the x-axis range
 ax.YLim = [-dist, dist];  % Set the y-axis range
 ax.ZLim = [-dist, dist];  % Set the z-axis range

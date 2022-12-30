@@ -12,8 +12,8 @@ greenwich = 0;
 % Orbit parameters
 %r0 = [ -4578.219; -801.084; -7929.708]; % [km]
 %v0 = [ 0.8; -6.037; 1.385]; % [km/s]
-r0 = [-1599.4;-5859.1;3019.2];
-v0 = [5.9909;2.3882;7.8083];
+r0 = [ 1599.4; 5859.1; 3019.2 ]; % [km]
+v0 = [ -5.9909; -2.3882; 7.8083 ]; % [km/s]
 y0 = [ r0; v0 ];
 
 % a = 8350;                           % Semi-major axis
@@ -26,7 +26,7 @@ y0 = [ r0; v0 ];
 
 Torb = 2*pi*sqrt( a^3/mu_E );          % Orbital period
 lambda = Torb*w_E;                     % Ground track drift
-nOrb = 1.5;
+nOrb = 5.5;
 nPoints = 5000;
 
 % NOTA: IMPLEMENTAR FUNCION QUE TRANSFORME STATE -> KEP VECTOR
@@ -71,44 +71,3 @@ hcb=colorbar;
 title(hcb,'Orbit number')
 grid on
 hold off
-
-%% Functions
-% Function ode_2bp
-function dy = ode_2bp( ~, y, mu, J2, R )
-%ode_2bp ODE system for the two-body problem (Keplerian motion)
-%
-% PROTOTYPE
-% dy = ode_2bp( t, y, mu )
-%
-% INPUT:
-% t[1] Time (can be omitted, as the system is autonomous) [T]
-% y[6x1] State of the body ( rx, ry, rz, vx, vy, vz ) [ L, L/T ]
-% mu[1] Gravitational parameter of the primary [L^3/T^2]
-%
-% OUTPUT:
-% dy[6x1] Derivative of the state [ L/T^2, L/T^3 ]
-%
-% CONTRIBUTORS:
-% Juan Luis Gonzalo Gomez
-%
-% VERSIONS
-% 2018-09-26: First version
-%
-% -------------------------------------------------------------------------
-% Position and velocity
-r = y(1:3);
-v = y(4:6);
-% Distance from the primary
-rnorm = norm(r);
-
-% aJ2 term
-aJ2 = 5*r(3)^2/rnorm^2;
-aJ2 = [r(1)/rnorm*(aJ2-1)
-    r(2)/rnorm*(aJ2-1)
-    r(3)/rnorm*(aJ2-3)];
-aJ2 = aJ2*1.5*J2*mu*R^2/rnorm^4;
-
-% Set the derivatives of the state
-dy = [ v
-(-mu/rnorm^3)*r+aJ2 ];
-end

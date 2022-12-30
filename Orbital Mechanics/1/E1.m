@@ -5,8 +5,8 @@ close all
 mu_E = astroConstants(13);
 
 % Initial condition
-r0 = [ 26578.137; 0; 0 ]; % [km]
-v0 = [ 0; 2.221; 3.173 ]; % [km/s]
+r0 = [ 1599.4; 5859.1; 3019.2 ]; % [km]
+v0 = [ -5.9909; -2.3882; 7.8083 ]; % [km/s]
 y0 = [ r0; v0 ];
 
 % Set time span
