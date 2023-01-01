@@ -11,9 +11,9 @@ cD = 2.1;
 AoverM = 0.0095; % m^2/kg
 
 %% Chosen inputs
-bOmega = 60; sOmega = 210; theta = 0;
+bOmega = 60; sOmega = 30; theta = 0;
 tWindow = [date2mjd2000([2021;11;1;0;0;0]);0];
-nsteps = 5400; 
+nsteps = 8000; 
 
 % Minimum value for this case: 600 steps per full period
 % Takes 4.9s real time seconds per image, so 5400 steps in a night (7.5h)
@@ -40,7 +40,7 @@ wEarth = 2*pi/Tearth;
 opts.RelTol = 1e-12;
 opts.AbsTol = 1e-13;
 opts.perturbShow = true;
-[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],2.25);
+[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],3);
 
 % Define time scale, time window and time in mjd
 [scaledT, Tname] = timescaling(T);
@@ -104,7 +104,7 @@ for j=1:nsteps
     p3Dopts = rmfield(p3Dopts, 'Size');
     % Ground track
     scatter3(trackT(1:j,1), trackT(1:j,2), trackT(1:j,3), 12, T(1:j), 'filled')
-    title('Earth focused animation');  
+    title(datestr(datetime(mjd20002date(tWindow(1)+T(j)/86400))), 'FontSize', 20,'Color','w');  
     axis equal;
     grid on;
     ax = gca; ax.Color = 'k'; ax.GridColor = 'k';

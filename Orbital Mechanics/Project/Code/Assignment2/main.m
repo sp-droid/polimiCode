@@ -12,9 +12,8 @@ AoverM = 0.0095; % m^2/kg
 
 %% Chosen inputs
 bOmega = 60; sOmega = 30; theta = 0;
-sOmega = 210;
 tWindow = [date2mjd2000([2021;11;1;0;0;0]);0];
-nsteps = 100;
+nsteps = 800;
 nmax = 360;
 cR = 1; %Radiation pressure coefficient
 
@@ -35,22 +34,22 @@ wEarth = 2*pi/Tearth;
 
 %% Orbit
 % Perform the integration
+sunPos = @(t) relativeSun(t, tWindow(1), muSun);
+moonPos = @(t) relativeMoon(t, tWindow(1));
+opts.wEarth = wEarth;
+densityModel = @(r) densitySimplified(norm(r)-Rearth);
+
 opts.RelTol = 1e-13;
 opts.AbsTol = 1e-14;
-%opts.sunPos = @(t) relativeSun(t, tWindow(1), muSun);
-%opts.muSun = muSun;
-%opts.moonPos = @(t) relativeMoon(t, tWindow(1));
-%opts.muMoon = muMoon;
-%opts.wEarth = wEarth;
-%opts.egm96 = @(r, thetaG) egm96acc(r, thetaG, Rearth, muEarth, nmax, CS, A, B);
-%opts.relativ = true;
-%densityModel = @(r) densitySimplified(norm(r)-Rearth);
-%opts.drag = @(r,v) drag(r, v, densityModel(r), wEarth, cD, AoverM);
-%sunPos = @(t) relativeSun(t, tWindow(1), muSun);
-%opts.srp = @(r,t) srp(r, sunPos, TTsun, Rsun, cR, AoverM)
-%i should clean this up a bit, make sure every perturbation is 1 function inside timed2bp
+%opts.j2Pert = @(r) j2Pert(r,J2,Rearth);
+opts.sunThirdBody = @(r,t) thirdBodyPert(r, sunPos(t), muSun);
+opts.moonThirdBody = @(r,t) thirdBodyPert(r, moonPos(t), muMoon);
+opts.egm96 = @(r,thetaG) egm96(r, thetaG, Rearth, muEarth, nmax, CS, A, B);
+opts.relativEffect = @(r,v) relativEffect(r, v, muEarth);
+opts.drag = @(r,v) drag(r, v, densityModel(r), wEarth, cD, AoverM);
+opts.srp = @(r,t) srp(r, sunPos(t), TTsun, Rsun, Rearth, cR, AoverM);
 opts.perturbShow = true;
-[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],0.5);
+[ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],[0,2]);
 
 tt = vecnorm(Y(:,1:3)'); tt(end);
 tt = max(vecnorm(Y(:,4:6)')); tt(end);
@@ -67,19 +66,42 @@ angleEarth = zeros(nsteps,1);
 track = zeros(nsteps,3); % This is the track relative to the initial Earth.
 % To obtain the one corresponding to time t(j), rotate the Earth angleEarth(j) and
 % trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
-sunP = zeros(nsteps,1);
+% Obtain perturbation numbers for every step
+perturbs = zeros(nsteps,6);
 for j=1:nsteps
-    rSun(j,:) = relativeSun(T(j), tWindow(1), muSun);
-    angleEarth(j) = rad2deg(wrapTo2Pi(wEarth*T(j)));
-    track(j,1:3) = (rotRz(deg2rad(angleEarth(j)))*normalize(Y(j,1:3)','norm'))'*Rearth;
-    rMoon(j,:) = relativeMoon(T(j), tWindow(1));
-    sunP(j) = norm(srp(Y(j,1:3),rSun(j,:),TTsun,Rsun,Rearth,cR,AoverM));
+    r = Y(j,1:3)'; v = Y(j,4:6)'; t = T(j); thetaG = wEarth*(t-0);
+    rSun(j,:) = relativeSun(t, tWindow(1), muSun);
+    angleEarth(j) = rad2deg(wrapTo2Pi(thetaG));
+    track(j,1:3) = (rotRz(deg2rad(angleEarth(j)))*normalize(r,'norm'))'*Rearth;
+    rMoon(j,:) = relativeMoon(t, tWindow(1));
+
+    perturbs(j,1) = norm(opts.sunThirdBody(r,t));
+    perturbs(j,2) = norm(opts.moonThirdBody(r,t));
+    perturbs(j,3) = norm(opts.egm96(r,thetaG));
+    perturbs(j,4) = norm(opts.relativEffect(r,v));
+    perturbs(j,5) = norm(opts.drag(r,v));
+    perturbs(j,6) = norm(opts.srp(r,t));
 end
+
+%% Perturbations
+figure;
+subplot(3,2,1)
+plot(scaledT,perturbs(:,1),'LineWidth',2); title('Sun3rdBody');
+subplot(3,2,2)
+plot(scaledT,perturbs(:,2),'LineWidth',2); title('Moon3rdBody');
+subplot(3,2,3)
+plot(scaledT,perturbs(:,3),'LineWidth',2); title('Egm96');
+subplot(3,2,4)
+plot(scaledT,perturbs(:,4),'LineWidth',2); title('Relativistic');
+subplot(3,2,5)
+plot(scaledT,perturbs(:,5),'LineWidth',2); title('Drag');
+subplot(3,2,6)
+plot(scaledT,perturbs(:,6),'LineWidth',2); title('SRP');
 
 %% Static plot
 screen = get(0, 'ScreenSize');
 [dist,j] = max(vecnorm(Y(:,1:3)'));
-r  = normalize([-0.5640;7.9794;0.8682]','norm')*dist; %Get it with ax.CameraPosition
+r  = normalize([-2.7425;7.5133;-0.7491]','norm')*dist; %Get it with ax.CameraPosition
 robs = r;
 trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
 
@@ -92,7 +114,7 @@ hold on
 p3Dopts = rmfield(p3Dopts, 'RotAngle');
 p3Dopts.Position = r;
 p3Dopts.Size = 3*dist;
-planet3D('Milkyway', p3Dopts);
+%planet3D('Milkyway', p3Dopts);
 sunRelPos = (normalize(rSun(j,:),'norm')*dist);
 sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs)*(1-Rearth/norm(r));
 if (dot(robs,sunRelPos)<0)
