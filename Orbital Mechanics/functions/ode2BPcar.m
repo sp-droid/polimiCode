@@ -27,32 +27,27 @@ rnorm = norm(r);
 aGrav = (-mu/rnorm^3)*r;
 
 aXYZ = [0;0;0];
-if perturbs.J2
-	aJ2 = 5*r(3)^2/rnorm^2;
-	aJ2 = [	r(1)/rnorm*(aJ2-1)
-			r(2)/rnorm*(aJ2-1)
-			r(3)/rnorm*(aJ2-3)];
-	aJ2 = aJ2*1.5*opts.J2*mu*opts.Rearth^2/rnorm^4;
-	aXYZ = aXYZ + aJ2;
+if perturbs.j2Pert
+	aXYZ = aXYZ + opts.j2Pert(r);
 end
-if perturbs.sun
-    rSun = opts.sunPos(t);
-    aSun = opts.muSun*((rSun-r)/norm(rSun-r)^3-rSun/norm(rSun)^3);
-    aXYZ = aXYZ + aSun;
+if perturbs.sunThirdBody
+    aXYZ = aXYZ + opts.sunThirdBody(r,t);
 end
-if perturbs.moon
-    rMoon = opts.moonPos(t);
-    aMoon = opts.muMoon*((rMoon-r)/norm(rMoon-r)^3-rMoon/norm(rMoon)^3);
-    aXYZ = aXYZ + aMoon;
+if perturbs.moonThirdBody
+    aXYZ = aXYZ + opts.moonThirdBody(r,t);
 end
 if perturbs.egm96
-    % Correction
     thetaG = opts.wEarth*(t-opts.t0);
     aXYZ = aXYZ + opts.egm96(r, thetaG);
 end
-if perturbs.relativ
-    c = 299792.458; % Speed of light in km/s
-    aGrav = aGrav - mu/rnorm^3*(((2/c)^2*mu/rnorm-dot(v,v)/c^2)*r+(2/c)^2*dot(r,v)*v);
+if perturbs.relativEffect
+    aXYZ = aXYZ + opts.relativEffect(r,v);
+end
+if perturbs.drag
+    aXYZ = aXYZ + opts.drag(r,v);
+end
+if perturbs.srp
+    aXYZ = aXYZ + opts.srp(r,t);
 end
 
 % Set the derivatives of the state

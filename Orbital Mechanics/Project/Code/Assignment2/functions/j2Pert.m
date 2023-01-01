@@ -1,0 +1,10 @@
+function a = j2Pert(r, J2, R)
+
+rnorm = norm(r);
+
+a = 5*r(3)^2/rnorm^2;
+a = [   r(1)/rnorm*(a-1)
+		r(2)/rnorm*(a-1)
+		r(3)/rnorm*(a-3)];
+a = a*1.5*J2*mu*R^2/rnorm^4;
+end

@@ -64,34 +64,47 @@ end
 %% Perturbations
 perturbs = struct;
 
-if isfield(opts,'J2') && isfield(opts,'Rearth')
-	perturbs.J2 = true;
+% J2 perturbation
+if isfield(opts,'j2Pert')
+	perturbs.j2Pert = true;
 else
-	perturbs.J2 = false;
+	perturbs.j2Pert = false;
 end
-if isfield(opts,'muSun') && isfield(opts,'sunPos')
-	perturbs.sun = true;
+% 3rd body perturbation: Sun
+if isfield(opts,'sunThirdBody')
+	perturbs.sunThirdBody = true;
 else
-	perturbs.sun = false;
+	perturbs.sunThirdBody = false;
 end
-if isfield(opts,'muMoon') && isfield(opts,'moonPos')
-	perturbs.moon = true;
+% 3rd body perturbation: Moon
+if isfield(opts,'moonThirdBody')
+	perturbs.moonThirdBody = true;
 else
-	perturbs.moon = false;
+	perturbs.moonThirdBody = false;
 end
+% Earth gravitational model 1996
 if isfield(opts,'egm96') && isfield(opts,'wEarth')
 	perturbs.egm96 = true;
 else
 	perturbs.egm96 = false;
 end
-if isfield(opts,'relativ')
-	if opts.relativ
-		perturbs.relativ = true;
-	else
-		perturbs.relativ = false;
-	end
+% Relativistic effects
+if isfield(opts,'relativEffect')
+	perturbs.relativEffect = true;
 else
-	perturbs.relativ = false;
+	perturbs.relativEffect = false;
+end
+% Atmospheric drag
+if isfield(opts,'drag')
+	perturbs.drag = true;
+else
+	perturbs.drag = false;
+end
+% Solar radiation pressure
+if isfield(opts,'srp')
+	perturbs.srp = true;
+else
+	perturbs.srp = false;
 end
 
 %% Define spatial integration parameters

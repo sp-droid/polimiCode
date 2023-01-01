@@ -2,7 +2,7 @@ function a = srp(r,rSun,TTsun,Rsun,Rbody,cR,AoverM)
 
 % Speed of light
 c = 299792458;
-% Stefan-Boltzmann constant in W/k^4/m^2
+% Stefan-Boltzmann constant in W/k^4/m
 sigm = 5.67*1e-8;
 
 %% Solar flux
@@ -11,7 +11,7 @@ phi0 = sigm*TTsun^4;
 
 % Solar flux near Earth ~ near the satellite because rSun >> r
 phi = phi0*(Rsun/norm(rSun))^2;
-solarPressure = phi/c;
+solarPressure = phi/c; % kg/m/s^2
 
 %% Shadow function
 % Apparent radius of the sun
