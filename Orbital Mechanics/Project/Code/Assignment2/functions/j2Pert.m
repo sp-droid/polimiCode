@@ -1,4 +1,4 @@
-function a = j2Pert(r, J2, R)
+function a = j2Pert(r, J2, R, mu)
 
 rnorm = norm(r);
 

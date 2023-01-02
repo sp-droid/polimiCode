@@ -13,7 +13,7 @@ nmax = 360;
 [A,B] = legendreAB(nmax);
 
 %% Undulation geopotential
-ngrid = 10;
+ngrid = 200;
 rnorm = R;%7625.3;
 lat = linspace(-90,90,ngrid);
 long = linspace(-180,180,ngrid);
@@ -47,5 +47,5 @@ hold off
 
 %% Geopotential's force
 r = [ -4431.86444818923;338.703956088788;-6195.86273753096 ];
-egm96acc(r, R, mu, nmax, CS, A, B)
+egm96(r, 0, R, mu, nmax, CS, A, B)
 
