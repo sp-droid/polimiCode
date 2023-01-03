@@ -13,7 +13,7 @@ nmax = 360;
 [A,B] = legendreAB(nmax);
 
 %% Undulation geopotential
-ngrid = 200;
+ngrid = 400;
 rnorm = R;%7625.3;
 lat = linspace(-90,90,ngrid);
 long = linspace(-180,180,ngrid);

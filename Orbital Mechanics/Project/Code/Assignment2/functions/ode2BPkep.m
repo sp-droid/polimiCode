@@ -1,4 +1,4 @@
-function dy = ode2BPkep( ~, y, mu, opts, perturbs )
+function dy = ode2BPkep( t, y, mu, opts, perturbs )
 % ODE system for the two-body problem (Keplerian motion) in cartesian coordinates
 %
 % PROTOTYPE
@@ -30,13 +30,26 @@ aGrav = h/rnorm^2;
 
 aRSW = [0;0;0];
 % J2 perturbation directly in RSW frame
-if perturbs.J2
+if perturbs.j2Pert
+    J2 = astroConstants(9);
+    Rearth = astroConstants(23);
 	aJ2 = [ 1-3*sin(i)^2*sin(theta+sOmega)^2
 			sin(i)^2*sin(2*(theta+sOmega))
 			sin(2*i)*sin(theta+sOmega)];
 	aJ2 = aJ2 * -1.5*J2*mu*Rearth^2/rnorm^4;
 	aRSW = aRSW + aJ2;
 end
+% drag on tnh
+if perturbs.drag
+    [r, v] = kep2car(a, e, i, bOmega, sOmega, theta, mu, 'rad');
+    aXYZ = opts.drag(r,v);
+    RSW1 = normalize(r,'norm');
+    RSW3 = normalize(cross(r,v),'norm');
+    RSW2 = cross(RSW3,RSW1);
+    rotm = [RSW1';RSW2';RSW3'];
+    aRSW = aRSW + rotm*aXYZ;
+end
+
 
 % Set the derivatives of the state in RSW frame
 dy = [	2*a^2/h * (e*sin(theta)*aRSW(1) + p/rnorm*aRSW(2))

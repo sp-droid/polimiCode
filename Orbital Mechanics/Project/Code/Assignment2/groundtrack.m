@@ -8,7 +8,6 @@ muEarth = astroConstants(13);
 Rearth = astroConstants(23);
 Tearth = 23*3600+56*60+4.1;
 wEarth = 2*pi/Tearth;
-%wEarth = deg2rad(15.04/3600);
 J2 = astroConstants(9);
 greenwich = 0;
 
@@ -35,7 +34,6 @@ ttime = 20*Tearth;
 % Perform the integration
 opts.RelTol = 1e-12;
 opts.AbsTol = 1e-13;
-%opts.perturbShow = true;
 
 [ Y, t ] = timed2BP(y0,muEarth,opts,nPoints,ttime);
 t = t';
@@ -53,7 +51,7 @@ long = wrapTo180(rad2deg(alpha-greenwich-wEarth*t));
 lat = rad2deg(delta);
 
 %% Plots
-figure('Position', [0 0 1200 300]);
+figure('Position', [0 0 1080 270]);
 subplot(1,2,1)
 img = imread('earth2D','jpg');
 image('CData',img,'XData',[-180 180],'YData',[90,-90]);
