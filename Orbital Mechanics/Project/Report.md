@@ -277,11 +277,11 @@ The aim was to find the tracked space object with the closest 3 first orbital el
 | **Assigned** | 26,619 km           | 0.7452           | 62.9089º        | -       | -       | -       |
 | **Real (01-11-2021)** | 26,910 km | 0.7399      | 62.5711º | 74.4297º | 278.065º | 174.3877º |
 
-The object is designated SL-6 R/B(2), a block-ML from a Molniya rocket that is orbiting the planet since 1999. It is catalogued in NORAD as 25850U and it's described<sup><a href="#ref2.9">[2.9]</a></sup> as a <u>900kg</u>, cylinder shaped (2.6x2.58x2.58m) rocket body, with an <u>average cross section of 7.8824</u> and radar cross section of 2 sq. meters. 
+The object is designated as SL-6 R/B(2), a block-ML from a Molniya rocket that is orbiting the planet since 1999. It is catalogued in NORAD as 25850U and it's described<sup><a href="#ref2.9">[2.9]</a></sup> as a <u>900kg</u>, cylinder shaped (2.6x2.58x2.58m) rocket body, with an <u>average cross section of 7.8824</u> and radar cross section of 2 sq. meters. 
 
 The procedure was the following: after selecting the object in tracking websites,<sup><a href="#ref2.10">[2.10]</a></sup><sup><a href="#ref2.11">[2.11]</a></sup> we obtained its TLEs from space-track.org from 1-11-2021 to 1-11-2022,<sup><a href="#ref2.12">[2.12]</a></sup> propagated them in the NASA Horizons website (to obtain very accurate ephemerides for every timestep) for the same duration but every hour,<sup><a href="#ref2.13">[2.13]</a></sup> and finally compared them with two models; the one with assigned perturbations and the full model that was detailed in [section 2.1.3](###2.1.3 Other perturbations).
 
-The coefficient of drag was assumed to be 2.2 like other similar space objects.<sup><a href="#ref2.12">[2.12]</a></sup> Other assumptions include the temperature of the Sun's surface to be constant and equal to 5778 K or the radiation pressure coefficient to be 1.05, calculated iteratively until achieving the best results.
+The <u>coefficient of drag was assumed to be 2.2</u> like other similar space objects.<sup><a href="#ref2.12">[2.12]</a></sup> Other assumptions include the <u>temperature of the Sun's surface to be constant and equal to 5778 K</u>, <u>Earth's axial tilt to be a constant 23.436º</u> (data from January 2021) or the <u>radiation pressure coefficient to be 1.05</u>, calculated iteratively until achieving the best results.
 
 ### 2.5.2 Results and discussion
 | <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\realvsmodels.png" alt="realvsmodels"  /> |
