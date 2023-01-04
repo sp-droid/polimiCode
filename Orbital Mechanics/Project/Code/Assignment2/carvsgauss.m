@@ -3,7 +3,7 @@ close all
 set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.2 0.2 0.6 0.6]);
 
 %% Inputs
-% Physical parameters
+% Celestial parameters
 muEarth = astroConstants(13);
 Rearth = astroConstants(23);
 Tearth = 23*3600+56*60+4.1;

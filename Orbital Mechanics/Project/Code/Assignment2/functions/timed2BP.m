@@ -175,6 +175,11 @@ if ~isfield(opts,'AbsTol')
 end
 solverOpts.AbsTol = opts.AbsTol;
 
+% Solver real time output
+if isfield(opts,'OutputFcn')
+	solverOpts.OutputFcn = opts.OutputFcn;
+end
+
 if opts.keplerian
 	odeSystem = @(t,y) ode2BPkep(t, y, mu, opts, perturbs);
 else

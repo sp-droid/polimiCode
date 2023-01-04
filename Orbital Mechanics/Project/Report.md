@@ -1,44 +1,31 @@
 
 
+![logo](C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\logo.png)
 
-
-
-
-<center><big><big><b>
+<center><big><big><big><b>
 Politecnico di Milano
 <br><br>Master in Space Engineering
 <br>Academic Year 2022 / 23<br><br>Orbital mechanics course
-</b></big></big></center>
-
-
-
-
-
+</b></big></big></big></center>
 
 
 <center><big><big><b>
-Final assignment
-<br><br>Interplanetary and planetary
+Final project: Interplanetary and planetary
 <br>explorer missions
 </b></big></big></center>
 
-
-
-
-
+| <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\projectlogo.PNG" alt="projectlogo" style="zoom:67%;" /> |
+| :----------------------------------------------------------: |
 
 
 
 <right><big><b>
-GROUP NUMBER: 2204
-<br><br>name (name id)
-<br><br>name (name id)
-<br><br>name (name id)
-<br><br>name (name id)
+VASP GROUP, NUMBER 2204
+<br><br>    Alessandro Michelazzi (10709804)
+<br><br>    Pablo Arbelo (10904636)
+<br><br>    Stefano Marinelli (10705548)
+<br><br>    Veronica Cerni (10700624)
 </b></big></right>
-
-
-
 
 <center><big><big><b>January 2023</b></big></big></center>
 <div style="page-break-after: always; break-after: page;"></div>
@@ -58,8 +45,6 @@ GROUP NUMBER: 2204
 >As part of the mission analysis team, you are requested to perform the preliminary mission analysis. You have to study the transfer options from Earth to the arrival asteroid, with a powered gravity assist (flyby) at the intermediate planet, and propose a solution based on the mission cost (measured through the total Δ𝑣).
 >
 >The mission departs from Earth, and the flyby planet and arrival asteroid have been decided by the science team. Constraints on earliest departure and latest arrival have also been set by the launch provider, the systems engineering team, and the Agency’s leadership.
-
-
 
 <div style="page-break-after: always; break-after: page;"></div>
 
@@ -93,7 +78,7 @@ GROUP NUMBER: 2204
 
 ### 2.1.2 Assigned perturbations
 
-- **J<sub>2</sub> effect** due to Earth's oblateness
+- **J<sub>2</sub> effect** due to Earth's oblateness<sup><a href="#ref2.1">[2.1]</a></sup>
 
 $$
 \Large
@@ -103,7 +88,7 @@ $$
 <u>**J<sub>2</sub>** =  0.0010826</u> as provided by the function *astroConstants* 
 
 
-- **Atmospheric drag** due to the absorption and reflection of massive particles against the spacecraft
+- **Atmospheric drag** due to the absorption and reflection of massive particles against the spacecraft<sup><a href="#ref2.1">[2.1]</a></sup>
 
 $$
 \Large
@@ -114,15 +99,15 @@ $$
 \Large
 where: \hspace{4mm} \mathbf{v_{rel}} = \mathbf{v}-\mathbf{\omega_E\wedge} \mathbf{r}
 $$
-The density at very high altitudes significantly depends day/night cycles and the solar activity at any given time, which by itself makes the modelling of aerodynamic drag a challenge. Moreover, the atmosphere is very heterogeneous in chemical composition at high h and that has to be taken into account aswell. There are several models, like the Jacchia-Bowman 2008, that adress these issues with varying levels of success. However, we are going to employ a simple exponential approximation that depends only on the altitude:
+The density at very high altitudes significantly depends day/night cycles and the solar activity at any given time, which by itself makes the modelling of aerodynamic drag a challenge. Moreover, the atmosphere is very heterogeneous in chemical composition at high h and that has to be taken into account aswell. There are several models, like the Jacchia-Bowman 2008,<sup><a href="#ref2.2">[2.2]</a></sup> that adress these issues with varying levels of success. However, we are going to employ a simple exponential approximation that depends only on the altitude:
 $$
 \Large
 \rho = \rho_0 exp\left ( -\frac{h-h_0}{H_0} \right ) \hspace{2mm};\hspace{2mm} \rho_0 = 2\cdot 10^{-8} \hspace{2mm};\hspace{2mm} h_0 = 122 km \hspace{2mm};\hspace{2mm} H_0 = H|(\rho=3\cdot 10^{-12},h=400km)
 $$
 
-<u>**C<sub>D</sub>** = 2.1</u>
+<u>**C<sub>D</sub>** = 2.1</u> ; <u>**A/m** = 0.0095 m<sup>2</sup>/kg</u>
 
-<u>**A/m** = 0.0095 m<sup>2</sup>/kg</u>
+The reference density values for both heights were selected from usual values.<sup><a href="#ref2.3">[2.3]</a></sup>
 
 <div style="page-break-after: always; break-after: page;"></div>
 
@@ -131,7 +116,7 @@ $$
 In the last point, the comparison with real data, we include an additional third model that features the following perturbations:
 
 - **Atmospheric drag** (Explained earlier)
-- **Solar radiation pressure**
+- **Solar radiation pressure**<sup><a href="#ref2.4">[2.4]</a></sup>
 
 $$
 \Large
@@ -148,9 +133,9 @@ $$
 and: \hspace{4mm} \upsilon = shadow function(r,r_{sun},R_E,R_{sun})
 $$
 
-This shadow function is implemented and working and can be seen in the referenced book.
+This shadow function is implemented in the code and is explained in the referenced book.<sup><a href="#ref2.4">[2.4]</a></sup>
 
-- **Earth gravitational model 1996** (And therefore substitutes the J<sub>2</sub>-only perturbation)
+- **Earth gravitational model 1996** (And therefore substitutes the J<sub>2</sub>-only perturbation)<sup><a href="#ref2.4">[2.4]</a></sup><sup><a href="#ref2.5">[2.5]</a></sup><sup><a href="#ref2.6">[2.6]</a></sup><sup><a href="#ref2.7">[2.7]</a></sup>
 
 $$
 \Large
@@ -171,7 +156,7 @@ With this it's also possible to calculate the geoid's undulation, which shows Ea
 |             <b>Fig.2.1 - Geoid's undulation</b>              |
 
 
-- **Sun and Moon 3rd body perturbations**
+- **Sun and Moon 3rd body perturbations**<sup><a href="#ref2.4">[2.4]</a></sup>
 
 $$
 \Large
@@ -180,9 +165,10 @@ $$
 
 Where **r** and **r<sub>2</sub>** are the position vectors of the spacecraft and the planet of mass **M<sub>2</sub>** relative to the Earth, **2** being the Sun or the Moon.
 
-- **Relativistic effects**
+- **Relativistic effects**<sup><a href="#ref2.4">[2.4]</a></sup>
 
 $$
+\Large
 \mathbf{\ddot{r}} = -\frac{GM_E}{r}\left [ (4\frac{GM}{c^2r}-\frac{v^2}{c^2})\mathbf{r}+\frac{4}{c^2}(\mathbf{r}\cdot \mathbf{v})\mathbf{v} \right ]
 $$
 
@@ -200,11 +186,11 @@ From here, the solver used is **ode113** with **1e-13** **relative** tolerance a
 | :----------------------------------------------------------: |
 | ![gt1d](C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\gt1d.png) |
 | ![gt10d](C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\gt10d.png) |
-| <b>Fig.2.2-3-4 - 1 orbit, 1 day & 10 day groundtrack (unperturbed-perturbed)</b> |
+| <b>Fig.2.2 - 1 orbit, 1 day & 10 day groundtrack (unperturbed-perturbed)</b> |
 
 ### 2.2.2 Repeating GT
 
-The orbit is already very close to having the k:m ratio of 2. Solve for the new semi-major axis from the equations:
+The orbit is already very close to having the k:m ratio of 2. Solve for the new semi-major axis from the equations:<sup><a href="#ref2.8">[2.8]</a></sup>
 $$
 \Large
 T^2 = 4\pi ^2\frac{a^3}{\mu }\hspace{1mm};\hspace{1mm}\frac{T}{T_E} = \frac{m}{k}\hspace{1mm};\hspace{1mm}T_E = 23h\hspace{1mm}56m\hspace{1mm}4.1s
@@ -215,13 +201,13 @@ $$
 
 | <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\repgt2.png" alt="repgt2"  /> |
 | :----------------------------------------------------------: |
-|    <b>Fig.2.5 -  k = 2, m = 1 (unperturbed-perturbed)</b>    |
+|    <b>Fig.2.3 -  k = 2, m = 1 (unperturbed-perturbed)</b>    |
 
 However, when propagated further into the future, the perturbed one deviates significantly:
 
 | ![repgt20](C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\repgt20.png) |
 | :----------------------------------------------------------: |
-|   <b>Fig.2.6 -  k = 20, m = 10 (unperturbed-perturbed)</b>   |
+|   <b>Fig.2.4 -  k = 20, m = 10 (unperturbed-perturbed)</b>   |
 
 The aerodynamic drag reduces e but most importantly, a (smaller period, shorter gt), while J<sub>2</sub> acts on the RAAN (shifted gt). J<sub>2</sub> can be compensated with a new a, using the secular variations that we know it causes, but drag mandates performing periodic burns to recover the right value of semi-major axis.
 
@@ -231,13 +217,13 @@ When choosing the propagation time, our criteria has been propagating until havi
 
 ### 2.3.1 Cartesian vs. Gauss's equations methods
 
-The Gauss's planetary equations allow us to integrate directly on the keplerian elements, after transforming the perturbations to either RSW or TNH frames, as opposed to the simple method of integrating the equation of motion in cartesian coordinates.
+The Gauss's planetary equations allow us to integrate directly on the keplerian elements, after transforming the perturbations to either RSW or TNH frames, as opposed to the simple method of integrating the equation of motion in cartesian coordinates.<sup><a href="#ref2.4">[2.4]</a></sup>
 
 After 10 orbits, the relative error between both methods continues near the set relative tolerance.
 
 | <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\carvskep.png" alt="carvskep"  /> |
 | :----------------------------------------------------------: |
-|   <b>Fig.2.7 -  Relative error (car-kep)/[a,1,pi,2pi]</b>    |
+|   <b>Fig.2.5 -  Relative error (car-kep)/[a,1,pi,2pi]</b>    |
 
 In terms of computational cost, our implementation of the Gauss's planetary eqs. is about 20% slower than plain cartesian, but this is because the drag function was developed in cartesian coordinates and we transform the perturbation directly from cartesian to RSW, when it would be faster to work on TNH. When removing the drag perturbation and leaving the J<sub>2</sub>, the cartesian method is more than 30% slower. 
 
@@ -245,18 +231,18 @@ We find that the computational complexity is very problem dependent and since we
 
 ### 2.3.2 High frequency filtering
 
-| (rounded to 4 d) | **Semi-major axis** | **Eccentricity** | **Inclination** | **RAAN** | **Argument of periapsis** | **True anomaly** |
+| (rounded to 3 d) | **Semi-major axis** | **Eccentricity** | **Inclination** | **RAAN** | **Argument of periapsis** | **True anomaly** |
 | -- | ------------------- | ---------------- | --------------- | -------- | ------------------------- | ---------------- |
 | **Secular variation** | -2.93e-7 km/s      | -3.45e-12 /s | 2.97e-11 º/s | -1.79e-6 º/s | 7.32e-8 º/s          | 8.35e-3 º/s |
 | **R<sup>2</sup>** | 0.941              | 0.943         | 0.689         | 1.00   | 1.00                    | 1.00    |
 
-The secular variations above have been obtained by applying a low-pass filter in the form of a moving window on the perturbed orbit, and a linear regression with y-intercept to get the slope. The size of the moving window is 1 orbital period. To evaluate the goodness of fit we can calculate the R-squared statistic, which tells us how well the linear fit predicts the secular variations in comparison to a horizontal line, from 0 to 1.
+The secular variations above have been obtained by applying a low-pass filter in the form of a moving window on the perturbed orbit, and a linear regression with y-intercept to get the slope. The size of the moving window is 1 orbital period. To evaluate the goodness of fit we can calculate the R-squared statistic, which tells us how well the linear fit predicts the secular variations.
 
-The low value of R-squared for the inclination points to a lower confidence. The only real possible effect that occurs to us that may be causing an actual increase in the inclination could be the slight mismatch between the direction of the drag force and the orbital velocity due to the assumption of the winds rotating with the Earth. Aerodynamic lift is known for being able to change orbital inclination.
+The low value of R-squared for the inclination points to a lower confidence. After testing with and without each perturbation, it seems this effect comes from the J<sub>2</sub>, even though we suspected it could come from the effect of the wind on the drag's force direction, but this is one order of magnitude smaller.
 
 | <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\filtered.png" alt="filtered"  /> |
 | :----------------------------------------------------------: |
-| <b>Fig.2.8 -  Filtered data in moving windows of 100, 25 & 5% of the initial orbital period</b> |
+| <b>Fig.2.6 -  Filtered data in moving windows of 100, 25 & 5% of the initial orbital period</b> |
 
 ## 2.4 Evolution of the orbit
 
@@ -272,66 +258,57 @@ https://www.youtube.com/watch?v=YlP3BiDUItA
 
 ### 2.4.2 Long term
 
+| <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\longterm.png" alt="longterm"  /> |
+| :----------------------------------------------------------: |
+| <b>Fig.2.7 -  Long term propagation (not showing every orbit)</b> |
+
+Propagated for two years or around 1464 orbits from the initial assigned orbital conditions and perturbations.
+
+<div style="page-break-after: always; break-after: page;"></div>
+
 ## 2.5 Real data comparison
 
-### 2.5.1 Object selection
+### 2.5.1 Object selection and procedure
 
 The aim was to find the tracked space object with the closest 3 first orbital elements: 
 
-|  | **Semi-major axis** | **Eccentricity** | **Inclination** |
-| ------------------- | ---------------- | --------------- | -------- |
-| Assigned | 26,619 km           | 0.7452           | 62.9089º        |
-| Real | 23,716 km  | 0.712        | 63º     |
+| t=0 | **Semi-major axis** | **Eccentricity** | **Inclination** | RAAN | Argument of periapsis | True anomaly |
+| ------------------- | ---------------- | --------------- | -------- | -------- | -------- | -------- |
+| **Assigned** | 26,619 km           | 0.7452           | 62.9089º        | -       | -       | -       |
+| **Real (01-11-2021)** | 26,910 km | 0.7399      | 62.5711º | 74.4297º | 278.065º | 174.3877º |
 
-The object is designated SL-6 R/B(2), a block-ML from a Molniya rocket that is orbiting the planet since 1999. It is catalogued in NORAD as 25850U and it's described as a 900kg, cylinder shaped (2.6x2.58x2.58m) rocket body, with an average cross section of 7.8824 and radar cross section of 2 sq. meters.
+The object is designated SL-6 R/B(2), a block-ML from a Molniya rocket that is orbiting the planet since 1999. It is catalogued in NORAD as 25850U and it's described<sup><a href="#ref2.9">[2.9]</a></sup> as a <u>900kg</u>, cylinder shaped (2.6x2.58x2.58m) rocket body, with an <u>average cross section of 7.8824</u> and radar cross section of 2 sq. meters. 
 
-### 2.5.2 Parameter estimation
+The procedure was the following: after selecting the object in tracking websites,<sup><a href="#ref2.10">[2.10]</a></sup><sup><a href="#ref2.11">[2.11]</a></sup> we obtained its TLEs from space-track.org from 1-11-2021 to 1-11-2022,<sup><a href="#ref2.12">[2.12]</a></sup> propagated them in the NASA Horizons website (to obtain very accurate ephemerides for every timestep) for the same duration but every hour,<sup><a href="#ref2.13">[2.13]</a></sup> and finally compared them with two models; the one with assigned perturbations and the full model that was detailed in [section 2.1.3](###2.1.3 Other perturbations).
 
+The coefficient of drag was assumed to be 2.2 like other similar space objects.<sup><a href="#ref2.12">[2.12]</a></sup> Other assumptions include the temperature of the Sun's surface to be constant and equal to 5778 K or the radiation pressure coefficient to be 1.05, calculated iteratively until achieving the best results.
 
+### 2.5.2 Results and discussion
+| <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\realvsmodels.png" alt="realvsmodels"  /> |
+| :----------------------------------------------------------: |
+| <b>Fig.2.8 -  1 year propagation of historic data vs. J<sub>2</sub>+drag model vs. Full model</b> |
 
-### 2.5.3 Comparison vs. assigned model
+Work in progress.
 
-
-
-### 2.5.4 Comparison vs. our model
 
 <div style="page-break-after: always; break-after: page;"></div>
 
 ---
 
-# Bibliography
+# Reference
 
-[1]: https://www.hindawi.com/journals/tswj/2014/163949 "Translational propagation LHS"
-[2]: http://yann.lecun.com/exdb/mnist/ "MNIST dataset"
-[3]: https://scholar.google.es/scholar_url?url=https://www.researchgate.net/file.PostFileLoader.html%3Fid%3D56d1ad946307d916ce8b4569%26assetKey%3DAS%253A333743404404737%25401456582036953&hl=en&sa=X&ei=kTnIYqLtO_-Ty9YPo6Gi8A4&scisig=AAGBfm04DGsPU0sKp62oS_g-YQq3UCh_wA&oi=scholarr "Cost sensitive learning"
-[4]: https://scholar.google.es/scholar_url?url=https://wires.onlinelibrary.wiley.com/doi/abs/10.1002/widm.1249&hl=en&sa=X&ei=BzrIYtGEBo_ymgG-lo_YBA&scisig=AAGBfm0_vKPlbNkn_FSo7O_I7qO0WOqW0Q&oi=scholarr "Ensemble learning"
-[5]: https://proceedings.neurips.cc/paper/2014/file/5ca3e9b122f61f8f06494c97b1afccf3-Paper.pdf "GAN"
-[6]: http://www.bio.miami.edu/dana/330/330F19_9.html "Whittaker's climograph"
-[7]: https://www.mit.edu/~dbertsim/papers/Optimization/Simulated%20annealing.pdf "SA"
-[8]: https://ieeexplore.ieee.org/document/488968 "PSO"
-[9]: https://link.springer.com/article/10.1007/s11042-020-10139-6 "GA"
-[10]: https://arxiv.org/abs/1406.2572 "Saddle point problem in high dimensional non-convex optimization"
+<a id="ref2.1">[2.1]</a> - [Course material Chapter 5](https://webeep.polimi.it/)
+<a id="ref2.2">[2.2]</a> - Bowman, B. R., Tobiska, W. K., Marcos, F. A., Huang, C. Y., Lin, C. S., & Burke, W. J. (2008). A new empirical thermospheric density model JB2008 using new solar and geomagnetic indices. *AIAA/AAS Astrodynamics Specialist Conference and Exhibit*. https://doi.org/10.2514/6.2008-6438
+<a id="ref2.3">[2.3]</a> - [Usual density values in high altitude](https://www.eoas.ubc.ca/courses/atsc113/flying/met_concepts/03-met_concepts/03a-std_atmos/index.html#:~:text=At%20that%20400%20km%20altitude,%2D12%20kg%2Fm3.)
+<a id="ref2.4">[2.4]</a> - Montenbruck, O., & Gill, E. (2000). Satellite Orbits. *Satellite Orbits*. https://doi.org/10.1007/978-3-642-58351-3
+<a id="ref2.5">[2.5]</a> - [EGM96 coefficients](https://cddis.nasa.gov/926/egm96/getit.html)
+<a id="ref2.6">[2.6]</a> - [EGM96 equations](https://people.sc.fsu.edu/~lb13f/projects/space_environment/egm96.php)
+<a id="ref2.7">[2.7]</a> - [Fully normalized Legendre polynomials](http://mitgcm.org/~mlosch/geoidcookbook/node11.html)
+<a id="ref2.8">[2.8]</a> - [Course material Chapter 2](https://webeep.polimi.it/)
 
-[Translational propagation LHS][1]
+<a id="ref2.9">[2.9]</a> - [Detailed tracking-discosweb.esoc.esa.int](https://discosweb.esoc.esa.int/objects?page=259&pageSize=100)
 
-[MNIST dataset][2]
-
-[Cost sensitive learning][3]
-
-[Ensemble learning][4]
-
-[GAN][5]
-
-[Whittaker][6]
-
-[Simulated Annealing][7]
-
-[Particle Swarm Optimization][8]
-
-[Genetic Algorithm][9]
-
-[Saddle points in high dimensional data][10]
-
-<div style="page-break-after: always; break-after: page;"></div>
-
-<div style="page-break-after: always; break-after: page;"></div>
+<a id="ref2.10">[2.10]</a> - [Tracking-satview.org](https://www.satview.org/?sat_id=25850U)
+<a id="ref2.11">[2.11]</a> - [Tracking-2yo.com](https://www.n2yo.com/satellite/?s=25850#results)
+<a id="ref2.12">[2.12]</a> - [TLEs from space-track.org](https://www.space-track.org)
+<a id="ref2.13">[2.13]</a> - [TLE NASA-Horizons propagator](https://ssd.jpl.nasa.gov/horizons/app.html#/)

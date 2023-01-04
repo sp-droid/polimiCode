@@ -37,7 +37,9 @@ if perturbs.moonThirdBody
     aXYZ = aXYZ + opts.moonThirdBody(r,t);
 end
 if perturbs.egm96
-    thetaG = opts.wEarth*(t-opts.t0);
+    % t-t0 assures the initial time of the propagation is 0
+    % opts.theta0 is necessary to get the initial rotation of the Earth
+    thetaG = opts.wEarth*(t-opts.t0)+opts.theta0;
     aXYZ = aXYZ + opts.egm96(r, thetaG);
 end
 if perturbs.relativEffect
