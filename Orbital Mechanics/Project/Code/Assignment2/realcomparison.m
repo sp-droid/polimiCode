@@ -191,6 +191,25 @@ plot(T,(Yreal(:,6)-Y2kep(:,6))/360,'LineWidth',2)
 title('True anomaly'); axis tight
 legend('vs.Full model','Location','northwest')
 
+%% Secular variations
+secularvals(T, Y2kep(:,1), 'Semi-major axis', ngrid)
+secularvals(T, Y2kep(:,2), 'Eccentricity', ngrid)
+secularvals(T, Y2kep(:,3), 'Inclination', ngrid)
+secularvals(T, Y2kep(:,4), 'RAAN', ngrid)
+secularvals(T, Y2kep(:,5), 'Argument of periapsis', ngrid)
+secularvals(T, Y2kep(:,6), 'True anomaly', ngrid)
+
+function secularvals(T, var, name, ngrid)
+
+T = T*86400;
+secular = movmean( var, ceil(ngrid/2) ); % half a year, full ngrid is 1 year
+
+name
+X = [ones(length(T),1) T];
+b = X\secular
+R2 = 1-sum((secular - X*b).^2)/sum((secular - mean(secular)).^2)
+end
+
 %% Functions
 function r = relativeSun(tseconds, initialMJD, muSun)
 T = initialMJD + tseconds/24/3600;

@@ -231,10 +231,10 @@ We find that the computational complexity is very problem dependent and since we
 
 ### 2.3.2 High frequency filtering
 
-| (rounded to 3 d) | **Semi-major axis** | **Eccentricity** | **Inclination** | **RAAN** | **Argument of periapsis** | **True anomaly** |
+| (rounded to 3 d) | $\mathbf{\dot{a}}$ (km/s) | $\mathbf{\dot{e}}$ (-/s) | $\mathbf{\dot{i}}$  º/s | $\mathbf{\dot{\Omega }}$  º/s | $\mathbf{\dot{\omega }}$  º/s | $\mathbf{\dot{\theta }}$  º/s |
 | -- | ------------------- | ---------------- | --------------- | -------- | ------------------------- | ---------------- |
-| **Secular variation** | -2.93e-7 km/s      | -3.45e-12 /s | 2.97e-11 º/s | -1.79e-6 º/s | 7.32e-8 º/s          | 8.35e-3 º/s |
-| **R<sup>2</sup>** | 0.941              | 0.943         | 0.689         | 1.00   | 1.00                    | 1.00    |
+| **Secular variation** | -2.93e-7      | -3.45e-12 | 2.97e-11 | -1.79e-6 | 7.32e-8          | 8.35e-3 |
+| **R<sup>2</sup>** | 0.94              | 0.94         | 0.69         | 1.00  | 1.00                   | 1.00   |
 
 The secular variations above have been obtained by applying a low-pass filter in the form of a moving window on the perturbed orbit, and a linear regression with y-intercept to get the slope. The size of the moving window is 1 orbital period. To evaluate the goodness of fit we can calculate the R-squared statistic, which tells us how well the linear fit predicts the secular variations.
 
@@ -281,14 +281,23 @@ The object is designated as SL-6 R/B(2), a block-ML from a Molniya rocket that i
 
 The procedure was the following: after selecting the object in tracking websites,<sup><a href="#ref2.10">[2.10]</a></sup><sup><a href="#ref2.11">[2.11]</a></sup> we obtained its TLEs from space-track.org from 1-11-2021 to 1-11-2022,<sup><a href="#ref2.12">[2.12]</a></sup> propagated them in the NASA Horizons website (to obtain very accurate ephemerides for every timestep) for the same duration but every hour,<sup><a href="#ref2.13">[2.13]</a></sup> and finally compared them with two models; the one with assigned perturbations and the full model that was detailed in [section 2.1.3](###2.1.3 Other perturbations).
 
-The <u>coefficient of drag was assumed to be 2.2</u> like other similar space objects.<sup><a href="#ref2.12">[2.12]</a></sup> Other assumptions include the <u>temperature of the Sun's surface to be constant and equal to 5778 K</u>, <u>Earth's axial tilt to be a constant 23.436º</u> (data from January 2021) or the <u>radiation pressure coefficient to be 1.05</u>, calculated iteratively until achieving the best results.
+The <u>coefficient of drag was assumed to be 2.2</u> like other similar space objects.<sup><a href="#ref2.14">[2.14]</a></sup> Other assumptions include the <u>temperature of the Sun's surface to be constant and equal to 5778 K</u>, <u>Earth's axial tilt to be a constant 23.436º</u> (data from January 2021) or the <u>radiation pressure coefficient to be 1.05</u>, calculated iteratively until achieving the best results and testing in the [0.7,1.3] range.
 
 ### 2.5.2 Results and discussion
-| <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\realvsmodels.png" alt="realvsmodels"  /> |
+| <img src="C:\Users\a1pab\Desktop\1POLIMI\polimiCode\Orbital Mechanics\Project\assets\realvsmodels.png" alt="realvsmodels" style="zoom:70%;"  /> |
 | :----------------------------------------------------------: |
 | <b>Fig.2.8 -  1 year propagation of historic data vs. J<sub>2</sub>+drag model vs. Full model</b> |
 
-Work in progress.
+We are also computing the secular values. This time the moving window size chosen is half a year to account for the longest oscillation in the simulated perturbations, which is Earth's translation around the Sun.
+| (rounded to 3 d) + [R<sup>2</sup>] | $\mathbf{\dot{a}}$ (km/s) | $\mathbf{\dot{e}}$ (-/s) | $\mathbf{\dot{i}}$  º/s | $\mathbf{\dot{\Omega }}$  º/s | $\mathbf{\dot{\omega }}$  º/s | $\mathbf{\dot{\theta }}$  º/s |
+| ------------------- | ---------------- | --------------- | -------- | -------- | -------- | -------- |
+| **NORAD 25850U** | -2.06e-8 [0.98] | 1.51e-10 /s [0.95] | 1.29e-8 º/s [0.99] | -1.54e-6 º/s [0.99] | 9.96e-8 º/s [0.99] | 7.38e-5 º/s [0.99] |
+| **Full model** | -1.46e-8 [0.90]           | 1.53e-10 /s [0.95]       | 1.48e-8 º/s [0.99]      | -1.53e-6 º/s [0.99]           | 8.84e-8 º/s [0.99]            | 7.54e-5 º/s [0.99]            |
+| **Assigned model** | 9.89e-10 [0.40]           | 2.19e-13 /s [0.99]       | -1.00e-11 º/s [0.99]    | -1.42e-6 º/s [0.99]           | 9.40e-8 º/s [0.99]            | 8.59e-5 º/s [0.99]            |
+
+The full model was able to much more accurately predict the real secular effects, always being within 1 order of magnitude in absolute terms, whereas the assigned model fell very short in relation to the shape parameters, being completely incapable of predicting them. However, the J<sub>2</sub> term alone seems able to predict the other 3 variables. Especially evident are the two week and half a year oscillations of the Moon and Sun in the eccentricity, that are lacking in the second model.
+
+On a different note, the computational cost of the full model was much higher. What it took around 5 seconds for the simple model, took 3 hours for the complex one. The most likely reason for such disparity is probably the implementation of the EGM96, which has more than 65,000 pairs of coefficients and consequently, iterations per integration step. There is probably a better way to implement it.
 
 
 <div style="page-break-after: always; break-after: page;"></div>
@@ -298,17 +307,16 @@ Work in progress.
 # Reference
 
 <a id="ref2.1">[2.1]</a> - [Course material Chapter 5](https://webeep.polimi.it/)
-<a id="ref2.2">[2.2]</a> - Bowman, B. R., Tobiska, W. K., Marcos, F. A., Huang, C. Y., Lin, C. S., & Burke, W. J. (2008). A new empirical thermospheric density model JB2008 using new solar and geomagnetic indices. *AIAA/AAS Astrodynamics Specialist Conference and Exhibit*. https://doi.org/10.2514/6.2008-6438
+<a id="ref2.2">[2.2]</a> - Bowman, B. R., Tobiska, W. K., Marcos, F. A., Huang, C. Y., Lin, C. S., & Burke, W. J. (2008). A new empirical thermospheric density model JB2008 using new solar and geomagnetic indices. *AIAA/AAS Astrodynamics Specialist Conference and Exhibit*. [DOI](https://doi.org/10.2514/6.2008-6438)
 <a id="ref2.3">[2.3]</a> - [Usual density values in high altitude](https://www.eoas.ubc.ca/courses/atsc113/flying/met_concepts/03-met_concepts/03a-std_atmos/index.html#:~:text=At%20that%20400%20km%20altitude,%2D12%20kg%2Fm3.)
-<a id="ref2.4">[2.4]</a> - Montenbruck, O., & Gill, E. (2000). Satellite Orbits. *Satellite Orbits*. https://doi.org/10.1007/978-3-642-58351-3
+<a id="ref2.4">[2.4]</a> - Montenbruck, O., & Gill, E. (2000). Satellite Orbits. *Satellite Orbits*. [DOI](https://doi.org/10.1007/978-3-642-58351-3)
 <a id="ref2.5">[2.5]</a> - [EGM96 coefficients](https://cddis.nasa.gov/926/egm96/getit.html)
 <a id="ref2.6">[2.6]</a> - [EGM96 equations](https://people.sc.fsu.edu/~lb13f/projects/space_environment/egm96.php)
 <a id="ref2.7">[2.7]</a> - [Fully normalized Legendre polynomials](http://mitgcm.org/~mlosch/geoidcookbook/node11.html)
 <a id="ref2.8">[2.8]</a> - [Course material Chapter 2](https://webeep.polimi.it/)
-
 <a id="ref2.9">[2.9]</a> - [Detailed tracking-discosweb.esoc.esa.int](https://discosweb.esoc.esa.int/objects?page=259&pageSize=100)
-
 <a id="ref2.10">[2.10]</a> - [Tracking-satview.org](https://www.satview.org/?sat_id=25850U)
 <a id="ref2.11">[2.11]</a> - [Tracking-2yo.com](https://www.n2yo.com/satellite/?s=25850#results)
 <a id="ref2.12">[2.12]</a> - [TLEs from space-track.org](https://www.space-track.org)
 <a id="ref2.13">[2.13]</a> - [TLE NASA-Horizons propagator](https://ssd.jpl.nasa.gov/horizons/app.html#/)
+<a id="ref2.14">[2.14]</a> - Mostaza Prieto, D., Graziano, B. P., & Roberts, P. C. E. (2014). Spacecraft drag modelling. In *Progress in Aerospace Sciences* (Vol. 64). [DOI](https://doi.org/10.1016/j.paerosci.2013.09.001)

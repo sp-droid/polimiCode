@@ -10,7 +10,7 @@ sigm = 5.67*1e-8;
 phi0 = sigm*TTsun^4;
 
 % Solar flux near Earth ~ near the satellite because rSun >> r
-phi = phi0*(Rsun/(norm(rSun)-Rsun))^2;
+phi = phi0*(Rsun/norm(rSun))^2;
 solarPressure = phi/c; % kg/m/s^2
 
 %% Shadow function
