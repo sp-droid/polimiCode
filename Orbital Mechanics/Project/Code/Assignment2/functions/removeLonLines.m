@@ -14,10 +14,6 @@ function [newlong,newlat] = removeLonLines( long, lat )
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
-%
-% VERSIONS
-% 2022-10-14: v1
-%
 % -------------------------------------------------------------------------
 newlong = [];
 newlat = [];

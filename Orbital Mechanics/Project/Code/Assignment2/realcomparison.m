@@ -16,7 +16,7 @@ nmax = 360;
 % Rocket body parameters
 cD = 2.2;
 AoverM = 7.88241304748947 / 900; % m^2/kg
-cR = 1.05; %Radiation pressure coefficient
+cR = 0.6; %Radiation pressure coefficient
 
 % Celestial parameters
 muEarth = astroConstants(13);
@@ -78,12 +78,12 @@ densityModel = @(r) densitySimplified(norm(r)-Rearth);
 opts2.RelTol = 1e-13;
 opts2.AbsTol = 1e-14;
 opts2.OutputFcn = @odeplot;
-opts2.sunThirdBody = @(r,t) thirdBodyPert(r, sunPos(t), muSun);
-opts2.moonThirdBody = @(r,t) thirdBodyPert(r, moonPos(t), muMoon);
+opts2.sunThirdBody = @(r,t) thirdBodyPert(r, sunPos(t)-r, muSun);
+opts2.moonThirdBody = @(r,t) thirdBodyPert(r, moonPos(t)-r, muMoon);
 opts2.egm96 = @(r,thetaG) egm96(r, thetaG, Rearth, muEarth, nmax, CS, A, B);
 opts2.relativEffect = @(r,v) relativEffect(r, v, muEarth);
 opts2.drag = @(r,v) drag(r, v, densityModel(r), wEarth, cD, AoverM);
-opts2.srp = @(r,t) srp(r, sunPos(t), TTsun, Rsun, Rearth, cR, AoverM);
+opts2.srp = @(r,t) srp(r, sunPos(t)-r, TTsun, Rsun, Rearth, cR, AoverM);
 opts2.perturbShow = true;
 
 [ Y2, T ] = timed2BP(y0, muEarth, opts2, ngrid, tspan);

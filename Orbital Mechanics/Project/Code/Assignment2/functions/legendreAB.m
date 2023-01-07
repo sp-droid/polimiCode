@@ -1,5 +1,5 @@
 function [A,B] = legendreAB(nmax)
-% Earth undulation at distance r
+% Coefficient matrix for legendre polynomials, to avoid unnecessary computations
 %
 % PROTOTYPE
 % [A,B] = legendreAB( r, Rearth, muEarth, nmax, CS, A, B )

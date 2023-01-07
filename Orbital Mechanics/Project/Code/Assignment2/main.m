@@ -46,12 +46,12 @@ densityModel = @(r) densitySimplified(norm(r)-Rearth);
 opts.RelTol = 1e-13;
 opts.AbsTol = 1e-14;
 %opts.j2Pert = @(r) j2Pert(r,J2,Rearth);
-opts.sunThirdBody = @(r,t) thirdBodyPert(r, sunPos(t), muSun);
-opts.moonThirdBody = @(r,t) thirdBodyPert(r, moonPos(t), muMoon);
+opts.sunThirdBody = @(r,t) thirdBodyPert(r, sunPos(t)-r, muSun);
+opts.moonThirdBody = @(r,t) thirdBodyPert(r, moonPos(t)-r, muMoon);
 opts.egm96 = @(r,thetaG) egm96(r, thetaG, Rearth, muEarth, nmax, CS, A, B);
 opts.relativEffect = @(r,v) relativEffect(r, v, muEarth);
 opts.drag = @(r,v) drag(r, v, densityModel(r), wEarth, cD, AoverM);
-opts.srp = @(r,t) srp(r, sunPos(t), TTsun, Rsun, Rearth, cR, AoverM);
+opts.srp = @(r,t) srp(r, sunPos(t)-r, TTsun, Rsun, Rearth, cR, AoverM);
 opts.perturbShow = true;
 [ Y, T ] = timed2BP(y0,muEarth,opts,nsteps,[],[0,2]);
 
@@ -103,7 +103,7 @@ plot(scaledT,perturbs(:,6),'LineWidth',2); title('SRP');
 %% Static plot
 screen = get(0, 'ScreenSize');
 [dist,j] = max(vecnorm(Y(:,1:3)'));
-r  = normalize([-2.7425;7.5133;-0.7491]','norm')*dist; %Get it with ax.CameraPosition
+r  = normalize([6.8766;-1.7488;0.6759]','norm')*dist; %Get it with ax.CameraPosition
 robs = r;
 trackT = (rotRz(deg2rad(-angleEarth(j)))*track')';
 
@@ -116,7 +116,7 @@ hold on
 p3Dopts = rmfield(p3Dopts, 'RotAngle');
 p3Dopts.Position = r;
 p3Dopts.Size = 3*dist;
-%planet3D('Milkyway', p3Dopts);
+planet3D('Milkyway', p3Dopts);
 sunRelPos = (normalize(rSun(j,:),'norm')*dist);
 sunRelSize = 2.1*Rsun/norm(rSun(j,:)-robs)*norm(sunRelPos-robs)*(1-Rearth/norm(r));
 if (dot(robs,sunRelPos)<0)
@@ -139,15 +139,15 @@ scatter3( trackT(:,1), trackT(:,2), trackT(:,3), 12, scaledT, 'filled')
 % Sun hitting the s/c
 scatter3( Y(:,1), Y(:,2), Y(:,3), 12, scaledT, 'filled')
 xlabel('x [km]'); ylabel('y [km]'); zlabel('z [km]');
-title(datestr(datetime(mjd20002date(tWindow(1)+T(end)/86400))), 'FontSize', 20,'Color','w');
+%title(datestr(datetime(mjd20002date(tWindow(1)+T(end)/86400))), 'FontSize', 20,'Color','w');
 %cbar = colorbar; cbar.Color = 'w'; cbar.Title.Color = 'w';
 %cbar.Title.String = strcat('Time [',Tname,']');
 clim([min(scaledT);max(scaledT)])   
 axis equal;
 grid on;
-ax = gca; ax.Color = 'k'; ax.GridColor = 'w';
-ax.GridAlpha = 0.45; ax.XColor = 'w'; ax.YColor = 'w';
-ax.ZColor = 'w';
+ax = gca; ax.Color = 'k'; ax.GridColor = 'k';
+ax.GridAlpha = 0; ax.XColor = 'k'; ax.YColor = 'k';
+ax.ZColor = 'k';
 ax.CameraPosition = r;  % Set the camera positiont
 %camva(2*viewAngle);
 ax.XLim = [-dist, dist];  % Set the x-axis range

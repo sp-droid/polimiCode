@@ -1,5 +1,5 @@
 function a = egm96(r, thetaEarth, Rearth, muEarth, nmax, CS, A, B)
-% Earth undulation at distance r
+% Earth perturbing acceleration at distance r
 %
 % PROTOTYPE
 % a = egm96acc( r, Rearth, muEarth, nmax, CS, A, B )
@@ -20,6 +20,7 @@ function a = egm96(r, thetaEarth, Rearth, muEarth, nmax, CS, A, B)
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
 % -------------------------------------------------------------------------
+
 % This assumes r comes from a fixed frame while the Earth is rotating, so we need thetaEarth
 rnorm = norm(r); x = r(1); y = r(2); z = r(3);
 long = atan2(y,x)-thetaEarth; ro = sqrt(x^2 + y^2);

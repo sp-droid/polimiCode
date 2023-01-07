@@ -1,5 +1,5 @@
 function [Y,T] = timed2BP( y0, mu, opts, ngrid, time, nPeriods )
-% Orbit forward and/or backward propagation
+% A complete propagator with dozens of options
 %
 % SIMPLEST PROTOTYPE
 % Y = timed2BP( [r0;v0], mu, [], ngrid )
@@ -16,19 +16,20 @@ function [Y,T] = timed2BP( y0, mu, opts, ngrid, time, nPeriods )
 %		• AbsTol[1]			-  Solver absolute tolerance, defaults to 1e-7
 %		• RelTol[1]			-  Solver relative tolerance, defaults to 1e-6
 %		• solver[@func]		-  Solver used, defaults to @ode113
+%		• OutputFcn[@func]	-  A common function to pass is @odeplot
 %		• keplerian[bool]	-  If true, use keplerian elements (only J2 perturbation is implemented with kep. elems.)
-%		• Rearth[1]			-  Earth radius
-%		• muSun[1]		    -  Sun's gravitational parameter
-%		• muMoon[1]		    -  Moon's gravitational parameter
-%		• sunPos[@func]		-  rSun = @(t) func(t, args)
-%		• moonPos[@func]	-  rMoon = @(t) func(t, args)
-%		• J2[1]				-  Perturbation J2 term
+%		• @func				-  Functions that enable perturbations. List of admitted functions and perturbations below
 % ngrid[1]		- Number of points (low number is recommended)
 %
-% PERTURBATIONS TRIGGERS:
-% Simple J2     - Rearth, J2
-% Sun           - muSun, sunPos
-% Moon          - muMoon, moonPos
+% ADMITTED PERTURBATIONS + OPTS.KEY + NAME OF FUNCTION 
+%		• J2				-  j2Pert			-  @j2Pert
+%		• Sun 3rd body		-  sunThirdBody		-  @thirdBodyPert
+%		• Moon 3rd body		-  moonThirdBody	-  @thirdBodyPert
+%		• Full earth model	-  egm96			-  @egm96
+%		• Relativistic		-  relativEffect	-  @relativEffect
+%		• Atmos. drag		-  drag				-  @drag
+%		• Rad. pressure		-  srp				-  @srp
+%
 % OPTIONAL INPUTS:
 % time			- Time interval in seconds:
 %		• omitted			- Defaults to linspace [0, 1 period]
@@ -42,7 +43,7 @@ function [Y,T] = timed2BP( y0, mu, opts, ngrid, time, nPeriods )
 %
 % OUTPUTS:
 % Y[ngridx3]	- Position of ngrid points in the specified time / orbital period [ L ]
-% Y[ngridx1]	- Time grid [ T ]
+% T[ngridx1]	- Time grid [ T ]
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera

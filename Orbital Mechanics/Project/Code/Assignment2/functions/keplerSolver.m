@@ -16,10 +16,6 @@ function E = keplerSolver(t, e, a, mu, t0, E0)
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
-%
-% VERSIONS
-% 2022-09-21: v1
-%
 % -------------------------------------------------------------------------
 % Mean motion and initial guess for E
 n = sqrt(mu/a^3);

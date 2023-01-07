@@ -1,5 +1,5 @@
 function [Y, tname] = timescaling( T )
-%timescaling for relevant time information in plots
+% Timescaling for relevant time information in plots
 %
 % PROTOTYPE
 % T, tname = timescaling( T )
@@ -13,9 +13,6 @@ function [Y, tname] = timescaling( T )
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
-%
-% VERSIONS
-% 2022-09-21: v1
 %
 % -------------------------------------------------------------------------
 maxT = max(T);

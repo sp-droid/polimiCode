@@ -1,4 +1,14 @@
 function a = srp(r,rSun,TTsun,Rsun,Rbody,cR,AoverM)
+% INPUTS:
+% I had no time to write the descriptions, i'm leaving them like this for now. The scripts on Code/aasignment2 should be self explanatory, in particular the realcomparison.m. It's 100% updated
+%
+% OUTPUT:
+% a[3x1] Perturbing acceleration
+%
+% CONTRIBUTORS:
+% Pablo Arbelo Cabrera
+%
+% -------------------------------------------------------------------------
 
 % Speed of light
 c = 299792458;

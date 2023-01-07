@@ -12,10 +12,6 @@ function R1 = rotRx( angle )
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
-%
-% VERSIONS
-% 2022-10-13: v1
-%
 % -------------------------------------------------------------------------
 R1 = [1 0 0;
     0 cos(angle) sin(angle);

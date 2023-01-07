@@ -13,9 +13,6 @@ function R2 = rotRy( angle )
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
 %
-% VERSIONS
-% 2022-10-13: v1
-%
 % -------------------------------------------------------------------------
 R2 = [cos(angle) 0 sin(angle);
       0 1 0;

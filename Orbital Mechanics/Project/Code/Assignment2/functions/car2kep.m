@@ -21,9 +21,6 @@ function [a,e,i,bOmega,sOmega,theta] = car2kep( r, v, mu, angleUnit )
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
 %
-% VERSIONS
-% 2022-10-13: v1
-%
 % -------------------------------------------------------------------------
 rNorm = vecnorm(r);
 vNorm = vecnorm(v);

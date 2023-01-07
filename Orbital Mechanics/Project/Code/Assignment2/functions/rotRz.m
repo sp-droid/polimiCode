@@ -13,9 +13,6 @@ function R3 = rotRz( angle )
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
 %
-% VERSIONS
-% 2022-10-13: v1
-%
 % -------------------------------------------------------------------------
 R3 = [cos(angle) sin(angle) 0;
       -sin(angle) cos(angle) 0;

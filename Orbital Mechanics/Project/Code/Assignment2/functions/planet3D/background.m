@@ -26,6 +26,7 @@
 % -----
 %   --> The function call on "background" MUST occur before the function
 %       call on "planet3D".
+%   --> Edited by Pablo Arbelo Cabrera to add size input variable and edit one specular parameter
 %
 %==========================================================================
 function background(spec)

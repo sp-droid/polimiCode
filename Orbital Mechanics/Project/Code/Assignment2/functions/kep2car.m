@@ -20,10 +20,6 @@ function [r,v] = kep2car( a, e, i, bOmega, sOmega, theta, mu, angleUnit )
 %
 % CONTRIBUTORS:
 % Pablo Arbelo Cabrera
-%
-% VERSIONS
-% 2022-10-13: v1
-%
 % -------------------------------------------------------------------------
 %Conversion to other angle units if it's necessary
 if isequal(angleUnit,'deg')
