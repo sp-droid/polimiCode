@@ -1,0 +1,91 @@
+ *******************************************************************************
+
+         NASA-GLENN CHEMICAL EQUILIBRIUM PROGRAM CEA2, MAY 21, 2004
+                   BY  BONNIE MCBRIDE AND SANFORD GORDON
+      REFS: NASA RP-1311, PART I, 1994 AND NASA RP-1311, PART II, 1996
+
+ *******************************************************************************
+
+
+
+ problem    ions  o/f=1.69,
+       rocket  frozen  nfz=1  t,k=
+   p,bar=10,
+   sup,ae/at=200,
+  WARNING!!  DID NOT RECOGNIZE t,k             (INPUT)
+
+ react
+   oxid=N2O4(L) t,k=298.15
+   fuel=CH6N2(L) t,k=298.15
+ output  massf short transport
+ end
+
+ WARNING!!  AMOUNT MISSING FOR REACTANT  1.
+ PROGRAM SETS WEIGHT PERCENT = 100. (REACT)
+
+ WARNING!!  AMOUNT MISSING FOR REACTANT  2.
+ PROGRAM SETS WEIGHT PERCENT = 100. (REACT)
+
+
+
+
+
+
+           THEORETICAL ROCKET PERFORMANCE ASSUMING FROZEN COMPOSITION
+
+ Pin =   145.0 PSIA
+ CASE =                
+
+             REACTANT                    WT FRACTION      ENERGY      TEMP
+                                          (SEE NOTE)     KJ/KG-MOL      K  
+ OXIDANT     N2O4(L)                      1.0000000    -17549.000    298.150
+ FUEL        CH6N2(L)                     1.0000000     54200.000    298.150
+
+ O/F=    1.69000  %FUEL= 37.174721  R,EQ.RATIO= 1.477163  PHI,EQ.RATIO= 1.477163
+
+                 CHAMBER   THROAT     EXIT
+ Pinf/P            1.0000   1.7934  6077.35
+ P, BAR            10.000   5.5760  0.00165
+ T, K             3079.67  2757.52   441.27
+ RHO, KG/CU M    8.0499-1 5.0130-1 9.2443-4
+ H, KJ/KG          317.52  -369.53 -4733.55
+ U, KJ/KG         -924.73 -1481.84 -4911.55
+ G, KJ/KG        -38553.8 -35174.7 -10303.3
+ S, KJ/(KG)(K)    12.6219  12.6219  12.6219
+
+ M, (1/n)          20.613   20.613   20.613
+ Cp, KJ/(KG)(K)    2.1472   2.1171   1.5229
+ GAMMAs            1.2313   1.2354   1.3603
+ SON VEL,M/SEC     1236.8   1172.2    492.1
+ MACH NUMBER        0.000    1.000    6.459
+
+ TRANSPORT PROPERTIES (GASES ONLY)
+   CONDUCTIVITY IN UNITS OF MILLIWATTS/(CM)(K)
+
+ VISC,MILLIPOISE  0.96015  0.88806  0.13003
+
+  WITH FROZEN REACTIONS
+
+ Cp, KJ/(KG)(K)    2.1472   2.1171   1.5229
+ CONDUCTIVITY      3.2823   2.9742   0.4232
+ PRANDTL NUMBER    0.6281   0.6322   0.4679
+
+ PERFORMANCE PARAMETERS
+
+ Ae/At                      1.0000   200.00
+ CSTAR, M/SEC               1701.7   1701.7
+ CF                         0.6888   1.8677
+ Ivac, M/SEC                2121.1   3234.4
+ Isp, M/SEC                 1172.2   3178.4
+
+ MASS FRACTIONS
+
+ *CO             0.17429   *CO2            0.08126   *H              0.00119
+ HO2             0.00001   *H2             0.01436   H2O             0.28799
+ *NO             0.00428   *N2             0.41531   *O              0.00149
+ *OH             0.01716   *O2             0.00264
+
+  * THERMODYNAMIC PROPERTIES FITTED TO 20000.K
+
+ NOTE. WEIGHT FRACTION OF FUEL IN TOTAL FUELS AND OF OXIDANT IN TOTAL OXIDANTS
+
