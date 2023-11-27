@@ -87,9 +87,9 @@ Y0 = Y(end,:); Y0(5) = constants.payload.m;
 tHist = [tHist; tHist4]; Y = [Y; Y4];
 
 density = arrayfun(@(h) atmos(h), Y(:,3));
-velocity = sqrt(Y(:,2).^2+Y(:,4).^2);
+velocity = sqrt( Y(:,2).^2+Y(:,4).^2 );
 dynamicPressure = 0.5*density.*velocity.^2;
-acceleration = gradient(velocity);
+acceleration = sqrt( gradient(Y(:,2)).^2+gradient(Y(:,4)).^2 );
 impactGs = velocity(end)/(tHist(end)-tHist(end-1))/constants.env.g0;
 
 % Rocket trajectory after deploying payload
@@ -99,7 +99,7 @@ Y0 = Y3(end,:); Y0(5) = Y0(5)-constants.payload.m;
 [tHistR,YR]=ode78(@(t,y) rocketDynamics(t, y, true, constants), [tHist3(end),tf], Y0, options);
 
 velocityR = sqrt(YR(:,2).^2+YR(:,4).^2);
-accelerationR = gradient(velocityR);
+accelerationR = sqrt( gradient(YR(:,2)).^2+gradient(YR(:,4)).^2 );
 
 disp('--------------------')
 disp(['Burnt fuel: ', num2str(Y(1,5)-Y(end,5)), ' kg']);
@@ -124,6 +124,7 @@ plot(Y4(:,1)*1e-3,Y4(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Stage separation->
 title(latex('Full trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 ylabel(latex('Altitude [km]'),'Interpreter','latex');
+xlim([0,YR(end,1)*1e-3]);
 ylim([0, 1.05*max(Y(:,3))*1e-3]);
 legend;
 grid on;
@@ -133,40 +134,46 @@ hold off;
 % Velocity
 figure;
 yyaxis left
-plot(Y(:,1)*1e-3,velocity,'Color','blue','LineWidth',1.5)
+plot(Y(:,1)*1e-3,velocity,'LineWidth',1.5)
 ylabel(latex('Velocity [m/s]'),'Interpreter','latex');
 yyaxis right
-plot(Y(:,1)*1e-3,Y(:,3)*1e-3,'Color','black','LineWidth',1.5)
+plot(Y(:,1)*1e-3,Y(:,3)*1e-3,'LineWidth',1.5)
 ylabel(latex('Altitude [km]'),'Interpreter','latex');
 title(latex('Velocity vs trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 grid on;
+xlim([0,Y(end,1)*1e-3]);
+ylim([0, 1.05*max(Y(:,3))*1e-3]);
 set(gca,'fontsize', 12)
 
 % Acceleration
 figure;
 yyaxis left
-plot(Y(:,1)*1e-3,acceleration/constants.env.g0,'Color','blue','LineWidth',1.5)
+plot(Y(:,1)*1e-3,acceleration/constants.env.g0,'LineWidth',1.5)
 ylabel(latex('Acceleration [Gs]'),'Interpreter','latex');
 yyaxis right
-plot(Y(:,1)*1e-3,Y(:,3)*1e-3,'Color','black','LineWidth',1.5)
+plot(Y(:,1)*1e-3,Y(:,3)*1e-3,'LineWidth',1.5)
 ylabel(latex('Altitude [km]'),'Interpreter','latex');
 title(latex('Acceleration vs trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 grid on;
+xlim([0,Y(end,1)*1e-3]);
+ylim([0, 1.05*max(Y(:,3))*1e-3]);
 set(gca,'fontsize', 12)
 
 % Dynamic pressure
 figure;
 yyaxis left
-plot(Y(:,1)*1e-3,dynamicPressure*1e-3,'Color','blue','LineWidth',1.5)
+plot(Y(:,1)*1e-3,dynamicPressure*1e-3,'LineWidth',1.5)
 ylabel(latex('Pressure [kPa]'),'Interpreter','latex');
 yyaxis right
-plot(Y(:,1)*1e-3,Y(:,3)*1e-3,'Color','black','LineWidth',1.5)
+plot(Y(:,1)*1e-3,Y(:,3)*1e-3,'LineWidth',1.5)
 ylabel(latex('Altitude [km]'),'Interpreter','latex');
 title(latex('Dynamic pressure vs trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 grid on;
+xlim([0,Y(end,1)*1e-3]);
+ylim([0, 1.05*max(Y(:,3))*1e-3]);
 set(gca,'fontsize', 12)
 
 %% Functions
@@ -207,7 +214,8 @@ payload = constants.payload;
 
 x = Y(1); vx = Y(2); z = Y(3); vz = Y(4); m = Y(5); gamma = Y(6);
 
-g = env.g0*(env.R_E/(env.R_E+z))^2; %Gravity turn unit in [m]
+% Gravity turn unit in [m]
+g = env.g0*(env.R_E/(env.R_E+z))^2;
 
 % Total velocity
 V = sqrt(vx^2 + vz^2);
@@ -240,8 +248,12 @@ T=Thrust(t);
 % Mass flow rate
 m_dot=T/(rocket.Isp*env.g0);
 
-% Gamma
-gamma_dot = (-g/V+V/(env.R_E+z))*cos(gamma); 
+% Gamma gamma_dot = (-g/V+V/(env.R_E+z))*cos(gamma); 
+if V==0
+    gamma = pi/2;
+else
+    gamma = asin(vz/V);
+end
 
 % Calculate resultant force
 Fx  =  T*cos(gamma) - D*cos(gamma);
@@ -254,7 +266,7 @@ dY = [
     vz;...
     Fz / m;...
     -m_dot;...
-    -gamma_dot];
+    -0];
 
 end
 
