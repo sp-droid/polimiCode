@@ -95,7 +95,7 @@ rbUpper = (a+Inc_a).*Pplot.^(n+Inc_n);
 rbLower = (a-Inc_a).*Pplot.^(n-Inc_n);
 
 %% Monte-Carlo method
-nPointsMonte = 30;
+nPointsMonte = 3;%0;
 aMontes = normrnd(a, Inc_a^2, nPointsMonte, 1);
 nMontes = normrnd(n, Inc_n^2, nPointsMonte, 1);
 cStarMontes = normrnd(cStar, Inc_cStar^2, nPointsMonte, 1);
