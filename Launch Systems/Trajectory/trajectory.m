@@ -36,8 +36,8 @@ constants.rocket = rocket;
 constants.payload = payload;
 
 % Initial conditions
-%Y = [x; vx; z; vz; m; gamma];
-Y0 = [0; 0.1; 0; 1; rocket.m0; pi/2];
+%Y = [x; vx; z; vz; m];
+Y0 = [0; 0.1; 0; 1; rocket.m0];
 
 
 %% Thrust
@@ -66,7 +66,7 @@ disp(['Gravity turn initiated at altitude: ', num2str(Y(end,3)), ' m']);
 disp('---------')
 % From Gravity turn to Burnout (assuming the coast happens after the turn)
 options = odeset('Events', @(t, Y) burnoutEvent(t, Y, tBurnout));
-Y0 = Y(end,:); Y0(6) = gammaTurn;
+Y0 = Y(end,:);
 [tHist2,Y2] = ode78(@(t,y) rocketDynamics(t, y, false, constants), [tHist(end),tf], Y0, options);
 tHist = [tHist; tHist2]; Y = [Y; Y2];
 disp(['Coast phase initiated at t+', num2str(tHist(end)), ' s']);
@@ -212,7 +212,7 @@ env = constants.env;
 rocket = constants.rocket;
 payload = constants.payload;
 
-x = Y(1); vx = Y(2); z = Y(3); vz = Y(4); m = Y(5); gamma = Y(6);
+x = Y(1); vx = Y(2); z = Y(3); vz = Y(4); m = Y(5);
 
 % Gravity turn unit in [m]
 g = env.g0*(env.R_E/(env.R_E+z))^2;
@@ -265,9 +265,7 @@ dY = [
     Fx /m;...
     vz;...
     Fz / m;...
-    -m_dot;...
-    -0];
-
+    -m_dot];
 end
 
 %% Miscellaneous functions
