@@ -10,26 +10,28 @@ graphPoints = 150;
 t0 = 0;
 tf = 1000;
 
-tBurnout = 55;
-tHistBurnout = linspace(0, tBurnout, graphPoints);
+[~,tBurnout1] = Thrust_ASAS_13(0);
+tHistBurnout1 = linspace(0, tBurnout1, graphPoints);
+
+[~,tBurnout2] = Thrust_Star15(0);
+tHistBurnout2 = linspace(0,tBurnout2, graphPoints);
 
 % Variables
 zTurn = 500;
-gammaTurn = deg2rad(60);
 
 % Environmental constants
 env.g0 = 9.81;                      % Earth standard grav. acc.
 env.R_E = 6278e3;                   % Earth standard radius
 
 % Rocket constants
-rocket.m0 = 1980;                   % Rocket mass at t0 [kg]
+rocket.m0 = 250;                    % Rocket EMPTY mass at t0 [kg]
 rocket.CD = 0.4;                    % Rocket cd
 rocket.D = 55.8*1e-2;               % Rocket diameter []
 rocket.A = pi/4*rocket.D^2;         % Rocket area []
-rocket.Isp = 288;                   % Rocket specific impulse [s]
+rocket.Isp = 283;                   % Rocket specific impulse [s]
 
 % Payload constants
-payload.m = 68;                     % Payload mass [kg]
+payload.m = 23;                     % Payload mass [kg]
 
 constants.env = env;
 constants.rocket = rocket;
@@ -37,18 +39,22 @@ constants.payload = payload;
 
 % Initial conditions
 %Y = [x; vx; z; vz; m];
-Y0 = [0; 0.1; 0; 1; rocket.m0];
+Y0 = [0; 0; 0; 0; rocket.m0+payload.m];
 
 
 %% Thrust
 
-thrust = arrayfun(@(t) Thrust(t), tHistBurnout);
+thrust1 = arrayfun(@(t) Thrust_ASAS_13(t), tHistBurnout1);
+thrust2 = arrayfun(@(t) Thrust_Star15(t), tHistBurnout2);
 
 figure;
-plot(tHistBurnout,thrust*1e-3,'Color','blue','LineWidth',1.5)
+hold on
+plot(tHistBurnout1,thrust1*1e-3,'LineWidth',1.5,'DisplayName','ASAS 13')
+plot(tHistBurnout2+tBurnout1,thrust2*1e-3,'LineWidth',1.5,'DisplayName','Star 15')
 title(latex('Thrust vs time'),'Interpreter','latex');
 xlabel(latex('Time [s]'),'Interpreter','latex');
-ylabel(latex('Thrust [N]'),'Interpreter','latex');
+ylabel(latex('Thrust [kN]'),'Interpreter','latex');
+legend;
 grid on;
 set(gca,'fontsize', 12)
 
@@ -59,47 +65,55 @@ disp(['Payload mass: ', num2str(constants.payload.m), ' kg']);
 disp('--------------------')
 % From Launch to Gravity turn
 options = odeset('Events', @(t, Y) zTurnEvent(t, Y, zTurn));
-[tHist1,Y1] = ode78(@(t,y) rocketDynamics(t, y, false, constants), [t0,tf], Y0, options);
+[tHist1,Y1] = ode78(@(t,y) rocketDynamics(t, y, Thrust_ASAS_13(t), constants), [t0,tf], Y0, options);
 tHist = tHist1; Y = Y1;
 disp(['Gravity turn initiated at t+', num2str(tHist(end)), ' s']);
 disp(['Gravity turn initiated at altitude: ', num2str(Y(end,3)), ' m']);
 disp('---------')
-% From Gravity turn to Burnout (assuming the coast happens after the turn)
-options = odeset('Events', @(t, Y) burnoutEvent(t, Y, tBurnout));
+% From Gravity turn to 1st Burnout (assuming the turn happens before the first burnout)
+options = odeset('Events', @(t, Y) burnoutEvent(t, Y, 0, tBurnout1));
 Y0 = Y(end,:);
-[tHist2,Y2] = ode78(@(t,y) rocketDynamics(t, y, false, constants), [tHist(end),tf], Y0, options);
+[tHist2,Y2] = ode78(@(t,y) rocketDynamics(t, y, Thrust_ASAS_13(t), constants), [tHist(end),tf], Y0, options);
 tHist = [tHist; tHist2]; Y = [Y; Y2];
-disp(['Coast phase initiated at t+', num2str(tHist(end)), ' s']);
-disp(['Coast phase initiated at altitude: ', num2str(Y(end,3)*1e-3), ' m']);
+disp(['First stage burnout at t+', num2str(tHist(end)), ' s']);
+disp(['First stage burnout at altitude: ', num2str(Y(end,3)*1e-3), ' m']);
 disp('---------')
-% From Burnout to Stage separation
+% From 1st Burnout to 2nd Burnout (assuming the turn happens before the first burnout)
+options = odeset('Events', @(t, Y) burnoutEvent(t, Y, tBurnout1, tBurnout2));
+Y0 = Y(end,:);
+[tHist3,Y3] = ode78(@(t,y) rocketDynamics(t, y, Thrust_Star15(t-tHist(end)), constants), [tHist(end),tf], Y0, options);
+tHist = [tHist; tHist3]; Y = [Y; Y3];
+disp(['Second stage burnout at t+', num2str(tHist(end)), ' s']);
+disp(['Second phase initiated at altitude: ', num2str(Y(end,3)*1e-3), ' m']);
+disp('---------')
+% From 2nd Burnout to Stage separation
 options = odeset('Events', @stageSeparationEvent);
 Y0 = Y(end,:);
-[tHist3,Y3] = ode78(@(t,y) rocketDynamics(t, y, true, constants), [tHist(end),tf], Y0, options);
-tHist = [tHist; tHist3]; Y = [Y; Y3];
+[tHist4,Y4] = ode78(@(t,y) rocketDynamics(t, y, 0, constants), [tHist(end),tf], Y0, options);
+tHist = [tHist; tHist4]; Y = [Y; Y4];
 disp(['Payload deployment at t+', num2str(tHist(end)), ' s']);
 disp(['Payload deployment at altitude: ', num2str(Y(end,3)*1e-3), ' km']);
 % Payload trajectory
 % From Stage separation to Landing
 options = odeset('Events', @impactEvent);
 Y0 = Y(end,:); Y0(5) = constants.payload.m;
-[tHist4,Y4]=ode78(@(t,y) rocketDynamics(t, y, true, constants), [tHist(end),tf], Y0, options);
-tHist = [tHist; tHist4]; Y = [Y; Y4];
+[tHist5,Y5]=ode78(@(t,y) rocketDynamics(t, y, 0, constants), [tHist(end),tf], Y0, options);
+tHist = [tHist; tHist5]; Y = [Y; Y5];
 
 density = arrayfun(@(h) atmos(h), Y(:,3));
 velocity = sqrt( Y(:,2).^2+Y(:,4).^2 );
 dynamicPressure = 0.5*density.*velocity.^2;
-acceleration = sqrt( gradient(Y(:,2)).^2+gradient(Y(:,4)).^2 );
+acceleration = gradient(velocity);%sqrt( gradient(Y(:,2)).^2+gradient(Y(:,4)).^2 );
 impactGs = velocity(end)/(tHist(end)-tHist(end-1))/constants.env.g0;
 
 % Rocket trajectory after deploying payload
 % From Stage separation to Impact
 options = odeset('Events', @impactEvent);
-Y0 = Y3(end,:); Y0(5) = Y0(5)-constants.payload.m;
-[tHistR,YR]=ode78(@(t,y) rocketDynamics(t, y, true, constants), [tHist3(end),tf], Y0, options);
+Y0 = Y4(end,:); Y0(5) = Y0(5)-constants.payload.m;
+[tHistR,YR]=ode78(@(t,y) rocketDynamics(t, y, 0, constants), [tHist4(end),tf], Y0, options);
 
 velocityR = sqrt(YR(:,2).^2+YR(:,4).^2);
-accelerationR = sqrt( gradient(YR(:,2)).^2+gradient(YR(:,4)).^2 );
+accelerationR = gradient(velocityR);%sqrt( gradient(YR(:,2)).^2+gradient(YR(:,4)).^2 );
 
 disp('--------------------')
 disp(['Burnt fuel: ', num2str(Y(1,5)-Y(end,5)), ' kg']);
@@ -118,9 +132,10 @@ figure;
 plot(YR(:,1)*1e-3,YR(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Rocket debris')
 hold on;
 plot(Y1(:,1)*1e-3,Y1(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Launch->Turn')
-plot(Y2(:,1)*1e-3,Y2(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Turn->Burnout')
-plot(Y3(:,1)*1e-3,Y3(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Burnout->Stage separation')
-plot(Y4(:,1)*1e-3,Y4(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Stage separation->Landing')
+plot(Y2(:,1)*1e-3,Y2(:,3)*1e-3,'LineWidth',1.5,'DisplayName','First stage')
+plot(Y3(:,1)*1e-3,Y3(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Second stage')
+plot(Y4(:,1)*1e-3,Y4(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Coast phase')
+plot(Y5(:,1)*1e-3,Y5(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Payload deployment->Landing')
 title(latex('Full trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 ylabel(latex('Altitude [km]'),'Interpreter','latex');
@@ -178,11 +193,17 @@ set(gca,'fontsize', 12)
 
 %% Functions
 
-% Stops the function at impact, when z crosses 0
-function [value, isterminal, direction] = impactEvent(t, Y)
-    value = Y(3);                   % Triggers when z is 0
+% Stops the function at gravity turn point
+function [value, isterminal, direction] = zTurnEvent(t, Y, zTurn)
+    value = Y(3)-zTurn;             % Triggers when z is 0
     isterminal = 1;                 % Stops the integration
-    direction = -1;                 % Change in value must be decreasing
+    direction = 0;
+end
+% Stops the function at burnout
+function [value, isterminal, direction] = burnoutEvent(t, Y, t0, tBurnout)
+    value = t-t0-tBurnout;          % Triggers when z is 0
+    isterminal = 1;                 % Stops the integration
+    direction = 0;
 end
 % Stage separation at apogee
 function [value, isterminal, direction] = stageSeparationEvent(t, Y)
@@ -191,22 +212,15 @@ function [value, isterminal, direction] = stageSeparationEvent(t, Y)
     isterminal = 1;                 % Does not stop the integration
     direction = -1;                 % Change in value must be decreasing
 end
-% Stops the function at burnout
-function [value, isterminal, direction] = burnoutEvent(t, Y, tBurnout)
-    value = t-tBurnout;             % Triggers when z is 0
+% Stops the function at impact, when z crosses 0
+function [value, isterminal, direction] = impactEvent(t, Y)
+    value = Y(3);                   % Triggers when z is 0
     isterminal = 1;                 % Stops the integration
-    direction = 0;
-end
-
-% Stops the function at gravity turn point
-function [value, isterminal, direction] = zTurnEvent(t, Y, zTurn)
-    value = Y(3)-zTurn;             % Triggers when z is 0
-    isterminal = 1;                 % Stops the integration
-    direction = 0;
+    direction = -1;                 % Change in value must be decreasing
 end
 
 % Trajectory dynamics
-function [ dY ] = rocketDynamics(t, Y, zTurn, constants)
+function [ dY ] = rocketDynamics(t, Y, propulsion, constants)
 
 env = constants.env;
 rocket = constants.rocket;
@@ -226,24 +240,24 @@ V = sqrt(vx^2 + vz^2);
 % Compute mach
 M = V/a;
 
-if t < 55
-    CD = zerolift_drag_powered(M); %Positive thrust 
-elseif vz > 0
-    CD = zerolift_drag_coast(M) ;  %Ballistic trajectory
-else
-    if m<70
-        CD = zerolift_drag_capsule(M);  %Rentry of the capsule + parachute TODO
-    else 
-        CD = 0.4;                       %TO DO Rentry of the launcher without paylaod
-    end
-end
+% if t < 55
+%     CD = zerolift_drag_powered(M); %Positive thrust 
+% elseif vz > 0
+%     CD = zerolift_drag_coast(M) ;  %Ballistic trajectory
+% else
+%     if m<70
+%         CD = zerolift_drag_capsule(M);  %Rentry of the capsule + parachute TODO
+%     else 
+%         CD = 0.3;                       %TO DO Rentry of the launcher without paylaod
+%     end
+% end
 CD = 0.4;
 
 % Calculate drag force
 D = 0.5 * rho * CD * rocket.A * V^2;
 
-% Thrust at time t 
-T=Thrust(t);
+% Thrust at time t
+T = propulsion;
     
 % Mass flow rate
 m_dot=T/(rocket.Isp*env.g0);
