@@ -118,12 +118,46 @@ hold off;
 vx=Y(:,2);
 vz=Y(:,4);
 V=sqrt(vx.^2+vz.^2);
+density = arrayfun(@(h) atmos(h), Y(:,3));
+velocity = sqrt( Y(:,2).^2+Y(:,4).^2 );
+dynamicPressure = 0.5*density.*V.^2;
 
-for i = 2:(length(V)-100)
-    a(i)=(V(i)-V(i-1))/(tHist(i)-tHist(i-1));
-end
-figure(3)
-plot(tHist(1:length(a)),a)
+maxiter = 1300;
+% Velocity
+figure;
+yyaxis left
+plot(Y(1:maxiter,1)*1e-3,V(1:maxiter),'LineWidth',1.5)
+ylabel(latex('Velocity [m/s]'),'Interpreter','latex');
+yyaxis right
+plot(Y(1:maxiter,1)*1e-3,Y(1:maxiter,3)*1e-3,'LineWidth',1.5)
+ylabel(latex('Altitude [km]'),'Interpreter','latex');
+title(latex('Velocity vs trajectory'),'Interpreter','latex');
+xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
+grid on;
+xlim([0,max(Y(1:maxiter,1))*1e-3]);
+ylim([0, 1.05*max(Y(1:maxiter,3))*1e-3]);
+set(gca,'fontsize', 12)
+
+% Dynamic pressure
+figure;
+yyaxis left
+plot(Y(1:maxiter,1)*1e-3,dynamicPressure(1:maxiter)*1e-3,'LineWidth',1.5)
+ylabel(latex('Pressure [kPa]'),'Interpreter','latex');
+yyaxis right
+plot(Y(1:maxiter,1)*1e-3,Y(1:maxiter,3)*1e-3,'LineWidth',1.5)
+ylabel(latex('Altitude [km]'),'Interpreter','latex');
+title(latex('Dynamic pressure vs trajectory'),'Interpreter','latex');
+xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
+grid on;
+xlim([0,max(Y(1:maxiter,1))*1e-3]);
+ylim([0, 1.05*max(Y(1:maxiter,3))*1e-3]);
+set(gca,'fontsize', 12)
+
+% for i = 2:(length(V)-100)
+%     a(i)=(V(i)-V(i-1))/(tHist(i)-tHist(i-1));
+% end
+% figure(3)
+% plot(tHist(1:length(a)),a)
 %% Functions
 % Stops the function at impact, when z crosses 0
 function [value, isterminal, direction] = impactEvent(t, Y)
