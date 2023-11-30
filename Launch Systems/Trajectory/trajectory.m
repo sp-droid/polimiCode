@@ -13,7 +13,7 @@ tf = 1000;
 [~,tBurnout1] = Thrust_ASAS_13(0);
 tHistBurnout1 = linspace(0, tBurnout1, graphPoints);
 
-[~,tBurnout2] = Thrust_Star15(0);
+[~,tBurnout2] = Thrust_Star13(0);
 tHistBurnout2 = linspace(0,tBurnout2, graphPoints);
 
 % Variables
@@ -45,7 +45,7 @@ Y0 = [0; 0; 0; 0; rocket.m0+payload.m];
 %% Thrust
 
 thrust1 = arrayfun(@(t) Thrust_ASAS_13(t), tHistBurnout1);
-thrust2 = arrayfun(@(t) Thrust_Star15(t), tHistBurnout2);
+thrust2 = arrayfun(@(t) Thrust_Star13(t), tHistBurnout2);
 
 figure;
 hold on
@@ -76,15 +76,15 @@ Y0 = Y(end,:);
 [tHist2,Y2] = ode78(@(t,y) rocketDynamics(t, y, Thrust_ASAS_13(t), constants), [tHist(end),tf], Y0, options);
 tHist = [tHist; tHist2]; Y = [Y; Y2];
 disp(['First stage burnout at t+', num2str(tHist(end)), ' s']);
-disp(['First stage burnout at altitude: ', num2str(Y(end,3)*1e-3), ' m']);
+disp(['First stage burnout at altitude: ', num2str(Y(end,3)*1e-3), ' km']);
 disp('---------')
 % From 1st Burnout to 2nd Burnout (assuming the turn happens before the first burnout)
 options = odeset('Events', @(t, Y) burnoutEvent(t, Y, tBurnout1, tBurnout2));
 Y0 = Y(end,:);
-[tHist3,Y3] = ode78(@(t,y) rocketDynamics(t, y, Thrust_Star15(t-tHist(end)), constants), [tHist(end),tf], Y0, options);
+[tHist3,Y3] = ode78(@(t,y) rocketDynamics(t, y, Thrust_Star13(t-tHist(end)), constants), [tHist(end),tf], Y0, options);
 tHist = [tHist; tHist3]; Y = [Y; Y3];
 disp(['Second stage burnout at t+', num2str(tHist(end)), ' s']);
-disp(['Second phase initiated at altitude: ', num2str(Y(end,3)*1e-3), ' m']);
+disp(['Second phase initiated at altitude: ', num2str(Y(end,3)*1e-3), ' km']);
 disp('---------')
 % From 2nd Burnout to Stage separation
 options = odeset('Events', @stageSeparationEvent);
@@ -139,7 +139,7 @@ plot(Y5(:,1)*1e-3,Y5(:,3)*1e-3,'LineWidth',1.5,'DisplayName','Payload deployment
 title(latex('Full trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 ylabel(latex('Altitude [km]'),'Interpreter','latex');
-xlim([0,YR(end,1)*1e-3]);
+xlim([0,max(YR(:,1))*1e-3]);
 ylim([0, 1.05*max(Y(:,3))*1e-3]);
 legend;
 grid on;
@@ -157,7 +157,7 @@ ylabel(latex('Altitude [km]'),'Interpreter','latex');
 title(latex('Velocity vs trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 grid on;
-xlim([0,Y(end,1)*1e-3]);
+xlim([0,max(Y(:,1))*1e-3]);
 ylim([0, 1.05*max(Y(:,3))*1e-3]);
 set(gca,'fontsize', 12)
 
@@ -172,7 +172,7 @@ ylabel(latex('Altitude [km]'),'Interpreter','latex');
 title(latex('Acceleration vs trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 grid on;
-xlim([0,Y(end,1)*1e-3]);
+xlim([0,max(Y(:,1))*1e-3]);
 ylim([0, 1.05*max(Y(:,3))*1e-3]);
 set(gca,'fontsize', 12)
 
@@ -187,7 +187,7 @@ ylabel(latex('Altitude [km]'),'Interpreter','latex');
 title(latex('Dynamic pressure vs trajectory'),'Interpreter','latex');
 xlabel(latex('Downrange distance [km]'),'Interpreter','latex');
 grid on;
-xlim([0,Y(end,1)*1e-3]);
+xlim([0,max(Y(:,1))*1e-3]);
 ylim([0, 1.05*max(Y(:,3))*1e-3]);
 set(gca,'fontsize', 12)
 
