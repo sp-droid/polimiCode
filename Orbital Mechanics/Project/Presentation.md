@@ -16,8 +16,10 @@
 [comment]: # (3 exclamations mean a horizontal slide break, 3 bars mean vertical slide break)
 
 [comment]: # (Set size parameters)
-[comment]: # (width: 1920)
-[comment]: # (height: 1080)
+[comment]: # (width: 2560)
+[comment]: # (height: 1440)
+<!-- [comment]: # (width: 1920) -->
+<!-- [comment]: # (height: 1080) -->
 
 
 
@@ -536,15 +538,21 @@ The low value of R-squared for the inclination points to a lower confidence. Aft
 
 We have made two videos of the first 3 orbits. First one shows the orbit from a fixed point relative to Earth's center:
 
-https://www.youtube.com/watch?v=gYX6A3jnGZs
+https://www.youtube.com/watch?v=nJ_P-hUO-3g
 
 And the second shows the orbit from the point of view of the spacecraft, centered on Earth:
 
-https://www.youtube.com/watch?v=YlP3BiDUItA
+https://www.youtube.com/watch?v=ByNQOdoczXE
 
 [comment]: # (||| style="font-size: 0.7em", data-background-image="assets/bgpart2.jpg", data-background-opacity=0.1)
-[comment]: # (||| data-background-video="assets/videos/fixed1.mp4", data-background-video-loop)
-[comment]: # (||| data-background-video="assets/videos/centered1.mp4", data-background-video-loop)
+
+<iframe src="https://www.youtube.com/embed/nJ_P-hUO-3g?autoplay=0" style="width: 100vw; height: 100vh;"></iframe>
+
+[comment]: # (||| style="font-size: 0.7em", data-background-image="assets/bgpart2.jpg", data-background-opacity=0.1)
+
+<iframe src="https://www.youtube.com/embed/ByNQOdoczXE?autoplay=0" style="width: 100vw; height: 100vh;"></iframe>
+
+[comment]: # (||| style="font-size: 0.7em", data-background-image="assets/bgpart2.jpg", data-background-opacity=0.1)
 
 ### 2.4.2 Long term
 
