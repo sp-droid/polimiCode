@@ -1,1 +1,0 @@
-You need a file named voxelizer.txt, obtained from the website voxelizer, turning a 3d model into a set of 3d cubes or voxels
