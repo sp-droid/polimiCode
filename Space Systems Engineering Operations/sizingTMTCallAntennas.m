@@ -2,7 +2,8 @@
 clc
 clear
 close all
-set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.2 0.2 0.6 0.6]);
+set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.25 0.25 0.3 0.4]);
+addpath('..\..\commonFunctions')
 
 %% Sources
 % S1: Detecting_Junos_Heartbeat_Communications_Support_during_Critical_Events_of_the_Juno_Mission.pdf
@@ -11,27 +12,8 @@ set(groot, 'defaultFigureUnits', 'normalized', 'defaultFigurePosition', [0.2 0.2
 % S4: The_Juno_Gravity_Science_Instrument.pdf
 % S5: https://en.wikipedia.org/wiki/Goldstone_Deep_Space_Communications_Complex#Antennas
 
-%% Loading the target coordinates S3
-load('raw/earth.mat');
-load('raw/jupiter.mat');
-load('raw/juno.mat');
-
-earth.x = earth.RAD_AU .* cosd(earth.HGI_LA) .* cosd(earth.THGI_LON);
-earth.y = earth.RAD_AU .* cosd(earth.HGI_LA) .* sind(earth.THGI_LON);
-earth.z = earth.RAD_AU .* sind(earth.HGI_LA);
-jupiter.x = jupiter.RAD_AU .* cosd(jupiter.HGI_LA) .* cosd(jupiter.THGI_LON);
-jupiter.y = jupiter.RAD_AU .* cosd(jupiter.HGI_LA) .* sind(jupiter.THGI_LON);
-jupiter.z = jupiter.RAD_AU .* sind(jupiter.HGI_LA);
-juno.x = juno.RAD_AU .* cosd(juno.HGI_LA) .* cosd(juno.THGI_LON);
-juno.y = juno.RAD_AU .* cosd(juno.HGI_LA) .* sind(juno.THGI_LON);
-juno.z = juno.RAD_AU .* sind(juno.HGI_LA);
-
-time.year = juno.YEAR + juno.DAY/365;
-distance.EarthToSun = earth.RAD_AU;
-distance.JupiterToSun = jupiter.RAD_AU;
-distance.JunoToSun = juno.RAD_AU;
-distance.JunoToEarth = distanceObjects(earth, juno);
-distance.JunoToJupiter = distanceObjects(jupiter, juno);
+%% Loading the target coordinates https://ssd.jpl.nasa.gov/horizons/app.html#/
+[Earth, Jupiter, Juno, time, distance, relVelocity] = earthJupiterJuno();
 
 %% Parameters
 LINK = "Downlink";
@@ -54,38 +36,21 @@ for j=1:4
                     DATARATE = 2e3;                     % bps, S2
                 case "Downlink"
                     FREQ_CARRIER = 8.404e9;
-                    DATARATE = 120e3;%18e3;
+                    DATARATE = 18e3;%18e3;
                     % MOD INDEX SEEMS TO BE 0 IN Ka BAND!
             end
             AMPLIFIER = "TWTA";                         % S1
             AMP_OUT_POWER = 25;                         % W, S2
             AMP_MASS = 2.4;                             % kg, S2
             AMP_EFFICIENCY = 0.48;                      % Class notes
-        case "Ka" % Unless specified, everything here has the same units / sources
-            switch LINK
-                case "Uplink"
-                    FREQ_CARRIER = 34.367e9;
-                    DATARATE = 2e3;
-                case "Downlink"
-                    FREQ_CARRIER = 32.085e9;
-                    DATARATE = 18e3;
-                    % MOD INDEX SEEMS TO BE 0 IN Ka BAND!
-            end
-            AMPLIFIER = "SSPA";
-            AMP_OUT_POWER = 2.5;
-            AMP_MASS = 1.1;                             % Class notes
-            AMP_EFFICIENCY = 0.11;
     end
     
+    BER = 1e-5;                                 % Bit error rate, S2
     switch LINK
-        case "Uplink"
-            BER = 1e-5;                                 % Bit error rate, S2
+        case "Uplink"                           
             % This is the TRACKING LOOP BANDWIDTH, NOT THE NOISE BANDWIDTH!
-            BANDWIDTH = 50;                             % Hz, S2
             CNR_MARGIN = 12;                            % dB
         case "Downlink"
-            BER = 1e-6;
-            BANDWIDTH = 50;
             CNR_MARGIN = 10;
     end
     
@@ -95,37 +60,27 @@ for j=1:4
     ENCODING = "Turbo 1/6, 8920 frame length";          % S2
     % They do use other encoding schemes like concatenated convolutional + RS
     % but it's for lower bit rates
-    ENCODING_COEF = 1/6;
+    ENCODING_COEF = 6;
     
+    ANTENNA_T = 250; % deg, S2
+    ANTENNA_ACCURACY = 0.069;                                           % K, S2
     switch ANTENNA % S2
         case "HGA"
             ANTENNA_D = 2.5;                            % deg, S2
             ANTENNA_BEAMWIDTH_REAL = 0.25;              % deg, S2
-            ANTENNA_EFFICIENCY = 0.55; % Class notes for parabolic, even though this is a dual reflector
-            ANTENNA_ACCURACY = 0.069;                   % deg, S2
+            ANTENNA_EFFICIENCY = 0.55; % Class notes for parabolic, even though this is a dual reflector        
             switch BAND
                 case "X"
-                    ANTENNA_T = 400;                                 % K, S2
                     switch LINK
                         case "Uplink"
                             ANTENNA_G_REAL = 43;
                         case "Downlink"
                             ANTENNA_G_REAL = 44.5;
                     end
-                case "Ka"
-                    ANTENNA_T = 700;
-                    switch LINK
-                        case "Uplink"
-                            ANTENNA_G_REAL = 47.5;
-                        case "Downlink"
-                            ANTENNA_G_REAL = 47;
-                    end
             end
         case "TLGA"
             ANTENNA_D = 0.26;
-            ANTENNA_T = 400;
             ANTENNA_BEAMWIDTH_REAL = 10;
-            ANTENNA_ACCURACY = 0.069;
             switch LINK
                 case "Uplink"
                     ANTENNA_G_REAL = 5.5;
@@ -135,9 +90,7 @@ for j=1:4
         case "MGA"
             ANTENNA_D = 0.135;
             ANTENNA_EFFICIENCY = 0.52;
-            ANTENNA_T = 400;
             ANTENNA_BEAMWIDTH_REAL = 10;
-            ANTENNA_ACCURACY = 0.069;
             switch LINK
                 case "Uplink"
                     ANTENNA_G_REAL = 18.1;
@@ -149,8 +102,6 @@ for j=1:4
         case "LGA"
             ANTENNA_D = 0.04;
             ANTENNA_EFFICIENCY = 0.52;
-            ANTENNA_T = 400;
-            ANTENNA_ACCURACY = 0.069;
             switch LINK
                 case "Uplink"
                     ANTENNA_G_REAL = 8.7;
@@ -169,21 +120,14 @@ for j=1:4
     switch BAND
         case "X"
             DSN_OUT_POWER = 19999;                      % W, S2
-            DSN_T = 33;                                 % K, S5
+            DSN_T = 21;                                 % K, S5
             switch LINK
                 case "Uplink"
                     DSN_G_REAL = 66.93;
+                    BANDWIDTH = 100;
                 case "Downlink"
                     DSN_G_REAL = 68.26;
-            end
-        case "Ka"
-            DSN_OUT_POWER = 794;
-            DSN_T = 95;
-            switch LINK
-                case "Uplink"
-                    DSN_G_REAL = 79.52;
-                case "Downlink"
-                    DSN_G_REAL = 78.41;
+                    BANDWIDTH = 3;
             end
     end
     
@@ -196,7 +140,7 @@ for j=1:4
     input_power = AMP_OUT_POWER / AMP_EFFICIENCY;
 
     % SYMBOL RATE
-    symbolRate = DATARATE * MODULATION_COEF / ENCODING_COEF;
+    symbolRate = DATARATE * ENCODING_COEF / MODULATION_COEF;
 
     wavelength = 3e8/FREQ_CARRIER;
     
@@ -287,13 +231,10 @@ for j=1:4
     Prx = eirp + receiverGain + totalLoss - lossesCables;
     N0rx = N0receiver;
     PtN0 = Prx - N0rx;
-    switch LINK
-        case "Uplink"
-            kbpsMaxforEbN0 = 10.^((PtN0-3)./10)/1000;
-        case "Downlink"
-            kbpsMaxforEbN0 = 10.^((PtN0-3.39)/10)/1000;
-    end
-    kbpsMaxforEbN0(kbpsMaxforEbN0 > 200) = 200;
+
+    kbpsMaxforEbN0 = 10.^((PtN0-0.7)./10)/1000;
+    maxy = 18;%prctile(kbpsMaxforEbN0,80);
+    kbpsMaxforEbN0(kbpsMaxforEbN0 > maxy) = maxy;
 
     Pc = Prx + powerModLoss;
     PcN0 = Pc - N0rx;
@@ -334,57 +275,3 @@ plotOnEngine2D( ...
     '\boldmath$Distance\hspace{0.5em}to\hspace{0.5em}Earth\hspace{0.5em}[AU]$', ...
     '\boldmath$CNR\hspace{0.5em}margin\hspace{0.5em}[dB]$', ...
     '\boldmath$Date\hspace{0.5em}[year]$');
-
-%% Functions
-function distance = distanceObjects(object1, object2)
-    distance = sqrt((object1.x-object2.x).^2+(object1.y-object2.y).^2+(object1.z-object2.z).^2);
-end
-
-function plotOnEngine2D(graphx,graphy,titleStr,yLabelLeft,yLabelRight,xLabelStr)
-fnx = fieldnames(graphx);
-fny = fieldnames(graphy);
-
-figure;
-if numel(fny)==1
-    scatter(graphx.(fnx{1}),graphy.(fny{1}))
-    hold on
-else
-    C1 = [0 0.4470 0.7410];  % blue
-    C2 = [0.8500 0.3250 0.0980];  % orange
-    C3 = [0.9290 0.6940 0.1250];  % yellow
-    C4 = [0.4940 0.1840 0.5560];  % purple
-    C5 = [0.4660 0.6740 0.1880];  % green
-    C6 = [0.3010 0.7450 0.9330];  % light blue
-    C7 = [0.6350 0.0780 0.1840];  % red
-    C8 = [1.0000 0.4000 0.6000];  % pink
-    C9 = [0.6350 0.0780 0.1840];  % brown
-    C10 = [0.0000 0.0000 0.0000];  % black
-    for i=1:numel(fny)
-        if numel(fnx)==1
-            fnxi = fnx{1};
-        else
-            fnxi = fnx{i};
-        end
-        if i==1
-            yyaxis left
-            plot(graphx.(fnxi),graphy.(fny{i}),'LineWidth',2,'DisplayName',fny{i},'Color',eval(['C' num2str(i)]))
-            title(titleStr,'Interpreter','latex');
-            xlabel(xLabelStr,'Interpreter','latex'); ylabel(yLabelLeft,'Interpreter','latex');
-            yyaxis right
-            continue
-        end
-        %scatter(graphx.(fnxi),graphy.(fny{i}),2,'DisplayName',fny{i},'MarkerEdgeColor',eval(['C' num2str(i)]))
-        plot(graphx.(fnxi),graphy.(fny{i}),'LineWidth',2,'DisplayName',fny{i},'Color',eval(['C' num2str(i)]))
-        hold on
-    end
-end
-ylabel(yLabelRight,'Interpreter','latex');
-grid on;
-xlim([min(graphx.(fnx{1})), max(graphx.(fnx{1}))])
-
-if numel(fny)~=1
-    legend('Location','SouthEast');
-end
-set(gca,'fontsize', 16) 
-hold off
-end
